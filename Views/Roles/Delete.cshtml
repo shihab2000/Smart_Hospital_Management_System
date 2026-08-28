@@ -1,0 +1,54 @@
+@model SHMS.Models.Role
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4 p-md-5">
+
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="d-flex align-items-center justify-content-center rounded-3 text-white bg-danger"
+                         style="width:48px;height:48px;">
+                        <i class="bi bi-exclamation-triangle fs-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="h4 mb-0 fw-bold">Delete Role</h1>
+                        <p class="text-muted small mb-0">This action cannot be undone.</p>
+                    </div>
+                </div>
+
+                <div class="alert alert-danger d-flex align-items-center gap-2 py-2 small mb-4">
+                    <i class="bi bi-info-circle"></i>
+                    Are you sure you want to permanently delete this role?
+                </div>
+
+                <hr class="mb-4" />
+
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted fw-normal">
+                        <i class="bi bi-tag me-2"></i>@Html.DisplayNameFor(model => model.RoleName)
+                    </dt>
+                    <dd class="col-sm-8">@Html.DisplayFor(model => model.RoleName)</dd>
+                </dl>
+
+                <hr class="my-4" />
+
+                <form asp-action="Delete">
+                    <input type="hidden" asp-for="RoleId" />
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger flex-fill fw-semibold">
+                            <i class="bi bi-trash me-1"></i> Delete
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>

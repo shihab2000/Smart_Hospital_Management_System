@@ -1,0 +1,65 @@
+@model IEnumerable<SHMS.Models.Admission>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Patient)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Ward)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Bed)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AdmissionDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DischargeDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Status)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Patient.Gender)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Ward.WardName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Bed.BedNumber)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AdmissionDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DischargeDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Status)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.AdmissionId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.AdmissionId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.AdmissionId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

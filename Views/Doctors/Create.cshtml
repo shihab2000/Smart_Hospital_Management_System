@@ -1,0 +1,126 @@
+@model SHMS.Models.Doctor
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4 p-md-5">
+
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="d-flex align-items-center justify-content-center rounded-3 text-white"
+                         style="width:48px;height:48px;background:linear-gradient(135deg, var(--brand-secondary), var(--brand-primary));">
+                        <i class="bi bi-person-badge fs-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="h4 mb-0 fw-bold">Create Doctor</h1>
+                        <p class="text-muted small mb-0">Add a new doctor and assign their department.</p>
+                    </div>
+                </div>
+
+                <hr class="mb-4" />
+
+                <form asp-action="Create">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input asp-for="Name" class="form-control" placeholder="Full name" />
+                                <label asp-for="Name"></label>
+                                <span asp-validation-for="Name" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input asp-for="Email" class="form-control" placeholder="Email" />
+                                <label asp-for="Email"></label>
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input asp-for="Phone" class="form-control" placeholder="Phone" />
+                                <label asp-for="Phone"></label>
+                                <span asp-validation-for="Phone" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <select asp-for="DepartmentId" class="form-select" asp-items="ViewBag.DepartmentId">
+                                    <option value="">-- Select Department --</option>
+                                </select>
+                                <label asp-for="DepartmentId"></label>
+                                <span asp-validation-for="DepartmentId" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input asp-for="Specialization" class="form-control" placeholder="Specialization" />
+                                <label asp-for="Specialization"></label>
+                                <span asp-validation-for="Specialization" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 d-flex align-items-center">
+                            <div class="form-check form-switch mt-3">
+                                <input class="form-check-input" type="checkbox" role="switch" asp-for="Availability" />
+                                <label class="form-check-label" asp-for="Availability"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary flex-fill py-2 fw-semibold">
+                            <i class="bi bi-check-circle me-1"></i> Create
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary py-2">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+        <div class="text-center mt-3">
+            <a asp-action="Index" class="text-decoration-none small">
+                <i class="bi bi-arrow-left me-1"></i>Back to List
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-primary {
+        background: linear-gradient(90deg, var(--brand-secondary), var(--brand-primary));
+        border: none;
+    }
+
+    .btn-primary:hover,
+    .btn-primary:focus {
+        opacity: .92;
+        background: linear-gradient(90deg, var(--brand-secondary), var(--brand-primary));
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--brand-primary);
+        box-shadow: 0 0 0 .2rem rgba(13, 148, 136, .15);
+    }
+
+    .form-check-input:checked {
+        background-color: var(--brand-primary);
+        border-color: var(--brand-primary);
+    }
+</style>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

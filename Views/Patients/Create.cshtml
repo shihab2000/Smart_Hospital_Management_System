@@ -1,0 +1,143 @@
+@model SHMS.Models.Patient
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4 p-md-5">
+
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="d-flex align-items-center justify-content-center rounded-3 text-white"
+                         style="width:48px;height:48px;background:linear-gradient(135deg, var(--brand-secondary), var(--brand-primary));">
+                        <i class="bi bi-person-plus fs-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="h4 mb-0 fw-bold">Create Patient</h1>
+                        <p class="text-muted small mb-0">Add a new patient record.</p>
+                    </div>
+                </div>
+
+                <hr class="mb-4" />
+
+                <form asp-action="Create">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input asp-for="Name" class="form-control" placeholder="Full name" />
+                                <label asp-for="Name"></label>
+                                <span asp-validation-for="Name" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input asp-for="DateOfBirth" type="date" class="form-control" />
+                                <label asp-for="DateOfBirth"></label>
+                                <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <select asp-for="Gender" class="form-select">
+                                    <option value="">-- Select Gender --</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <label asp-for="Gender"></label>
+                                <span asp-validation-for="Gender" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input asp-for="Phone" class="form-control" placeholder="Phone" />
+                                <label asp-for="Phone"></label>
+                                <span asp-validation-for="Phone" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <select asp-for="BloodGroup" class="form-select">
+                                    <option value="">-- Select Blood Group --</option>
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                </select>
+                                <label asp-for="BloodGroup"></label>
+                                <span asp-validation-for="BloodGroup" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input asp-for="EmergencyContact" class="form-control" placeholder="Emergency contact" />
+                                <label asp-for="EmergencyContact"></label>
+                                <span asp-validation-for="EmergencyContact" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-floating">
+                                <textarea asp-for="Address" class="form-control" placeholder="Address" style="height:100px"></textarea>
+                                <label asp-for="Address"></label>
+                                <span asp-validation-for="Address" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary flex-fill py-2 fw-semibold">
+                            <i class="bi bi-check-circle me-1"></i> Create
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary py-2">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+        <div class="text-center mt-3">
+            <a asp-action="Index" class="text-decoration-none small">
+                <i class="bi bi-arrow-left me-1"></i>Back to List
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-primary {
+        background: linear-gradient(90deg, var(--brand-secondary), var(--brand-primary));
+        border: none;
+    }
+
+    .btn-primary:hover,
+    .btn-primary:focus {
+        opacity: .92;
+        background: linear-gradient(90deg, var(--brand-secondary), var(--brand-primary));
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--brand-primary);
+        box-shadow: 0 0 0 .2rem rgba(13, 148, 136, .15);
+    }
+</style>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

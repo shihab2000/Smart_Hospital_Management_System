@@ -1,0 +1,47 @@
+@model IEnumerable<SHMS.Models.Ward>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.WardName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.WardType)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TotalBeds)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.WardName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.WardType)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TotalBeds)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.WardId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.WardId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.WardId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

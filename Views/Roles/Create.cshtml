@@ -1,0 +1,80 @@
+@model SHMS.Models.Role
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4 p-md-5">
+
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="d-flex align-items-center justify-content-center rounded-3 text-white"
+                         style="width:48px;height:48px;background:linear-gradient(135deg, var(--brand-secondary), var(--brand-primary));">
+                        <i class="bi bi-shield-plus fs-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="h4 mb-0 fw-bold">Create Role</h1>
+                        <p class="text-muted small mb-0">Add a new role to control access across the system.</p>
+                    </div>
+                </div>
+
+                <hr class="mb-4" />
+
+                <form asp-action="Create">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
+
+                    <div class="form-floating mb-4">
+                        <input asp-for="RoleName" class="form-control" placeholder="e.g. Doctor" />
+                        <label asp-for="RoleName"></label>
+                        <span asp-validation-for="RoleName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-fill py-2 fw-semibold">
+                            <i class="bi bi-check-circle me-1"></i> Create
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary py-2">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+        <div class="text-center mt-3">
+            <a asp-action="Index" class="text-decoration-none small">
+                <i class="bi bi-arrow-left me-1"></i>Back to List
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --bs-primary: var(--brand-secondary, #0369a1);
+        --bs-primary-rgb: 3, 105, 161;
+    }
+
+    .btn-primary {
+        background: linear-gradient(90deg, var(--brand-secondary), var(--brand-primary));
+        border: none;
+    }
+
+    .btn-primary:hover,
+    .btn-primary:focus {
+        opacity: .92;
+        background: linear-gradient(90deg, var(--brand-secondary), var(--brand-primary));
+    }
+
+    .form-control:focus {
+        border-color: var(--brand-primary);
+        box-shadow: 0 0 0 .2rem rgba(13, 148, 136, .15);
+    }
+</style>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
