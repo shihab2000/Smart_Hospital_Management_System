@@ -19,28 +19,31 @@ namespace SHMS.Controllers
             _context = context;
         }
 
-        // GET: Medicines
-        public async Task<IActionResult> Index()
+        
+       // GET: Medicines
+        public async Task<IActionResult> Index(string filter)
         {
-            return View(await _context.Medicines.ToListAsync());
-        }
+            var medicines = _context.Medicines.Include(m => m.Supplier).AsQueryable();
 
-        // GET: Medicines/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
+            var lowStockThreshold = 50;
+            var expiryWarningDays = 30;
+            var today = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
+            var expiryWarningDate = today.AddDays(expiryWarningDays);
+
+            if (filter == "lowstock")
             {
-                return NotFound();
+                medicines = medicines.Where(m => m.Quantity < lowStockThreshold);
+            }
+            else if (filter == "expiring")
+            {
+                medicines = medicines.Where(m => m.ExpiryDate <= expiryWarningDate);
             }
 
-            var medicine = await _context.Medicines
-                .FirstOrDefaultAsync(m => m.MedicineId == id);
-            if (medicine == null)
-            {
-                return NotFound();
-            }
+            ViewData["CurrentFilter"] = filter;
+            ViewData["LowStockThreshold"] = lowStockThreshold;
+            ViewData["ExpiryWarningDate"] = expiryWarningDate;
 
-            return View(medicine);
+            return View(await medicines.OrderBy(m => m.MedicineName).ToListAsync());
         }
 
         // GET: Medicines/Create

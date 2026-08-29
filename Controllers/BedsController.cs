@@ -19,12 +19,20 @@ namespace SHMS.Controllers
             _context = context;
         }
 
-        // GET: Beds
-        public async Task<IActionResult> Index()
-        {
-            var applicationDbContext = _context.Beds.Include(b => b.Ward);
-            return View(await applicationDbContext.ToListAsync());
-        }
+       // GET: Beds
+public async Task<IActionResult> Index(bool availableOnly = false)
+{
+    var beds = _context.Beds.Include(b => b.Ward).AsQueryable();
+
+    if (availableOnly)
+    {
+        beds = beds.Where(b => b.Status == "Available");
+    }
+
+    ViewData["AvailableOnly"] = availableOnly;
+
+    return View(await beds.OrderBy(b => b.Ward!.WardName).ThenBy(b => b.BedNumber).ToListAsync());
+}
 
         // GET: Beds/Details/5
         public async Task<IActionResult> Details(int? id)

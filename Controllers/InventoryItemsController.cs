@@ -20,9 +20,18 @@ namespace SHMS.Controllers
         }
 
         // GET: InventoryItems
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(bool lowStockOnly = false)
         {
-            return View(await _context.InventoryItems.ToListAsync());
+            var items = _context.InventoryItems.AsQueryable();
+
+            if (lowStockOnly)
+            {
+                items = items.Where(i => i.Quantity < i.MinimumStock);
+            }
+
+            ViewData["LowStockOnly"] = lowStockOnly;
+
+            return View(await items.OrderBy(i => i.ItemName).ToListAsync());
         }
 
         // GET: InventoryItems/Details/5
@@ -50,8 +59,6 @@ namespace SHMS.Controllers
         }
 
         // POST: InventoryItems/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("InventoryItemId,ItemName,ItemType,Quantity,Unit,MinimumStock,Status")] InventoryItem inventoryItem)
@@ -82,8 +89,6 @@ namespace SHMS.Controllers
         }
 
         // POST: InventoryItems/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("InventoryItemId,ItemName,ItemType,Quantity,Unit,MinimumStock,Status")] InventoryItem inventoryItem)
@@ -147,6 +152,13 @@ namespace SHMS.Controllers
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        // GET: InventoryItems/Report
+        public async Task<IActionResult> Report()
+        {
+            var items = await _context.InventoryItems.OrderBy(i => i.ItemName).ToListAsync();
+            return View(items);
         }
 
         private bool InventoryItemExists(int id)

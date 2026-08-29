@@ -1,60 +1,125 @@
 @model SHMS.Models.Invoice
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Invoice Details";
 }
 
-<h1>Details</h1>
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4 p-md-5">
 
-<div>
-    <h4>Invoice</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Patient)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Patient.Gender)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.InvoiceDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.InvoiceDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ConsultationFee)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ConsultationFee)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.MedicineCharge)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.MedicineCharge)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.LabCharge)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.LabCharge)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.TotalAmount)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.TotalAmount)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.PaymentStatus)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.PaymentStatus)
-        </dd>
-    </dl>
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="d-flex align-items-center justify-content-center rounded-3 text-white fs-4"
+                         style="width:64px;height:64px;background:linear-gradient(135deg, var(--brand-secondary), var(--brand-primary));">
+                        <i class="bi bi-receipt"></i>
+                    </div>
+                    <div>
+                        <h1 class="h4 mb-0 fw-bold">@(Model?.Patient?.Name ?? "—")</h1>
+                        <p class="text-muted small mb-0">Invoice #INV-@Model?.InvoiceId.ToString("D5") · @Model?.InvoiceDate.ToString("dd MMM yyyy")</p>
+                    </div>
+                </div>
+
+                <hr class="mb-4" />
+
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted fw-normal">Consultation Fee</dt>
+                    <dd class="col-sm-8">৳@Model?.ConsultationFee.ToString("0.00")</dd>
+
+                    <dt class="col-sm-4 text-muted fw-normal">Medicine Charge</dt>
+                    <dd class="col-sm-8">৳@Model?.MedicineCharge.ToString("0.00")</dd>
+
+                    <dt class="col-sm-4 text-muted fw-normal">Lab Charge</dt>
+                    <dd class="col-sm-8">৳@Model?.LabCharge.ToString("0.00")</dd>
+
+                    <dt class="col-sm-4 fw-bold">Total Amount</dt>
+                    <dd class="col-sm-8 fw-bold">৳@Model?.TotalAmount.ToString("0.00")</dd>
+
+                    <dt class="col-sm-4 text-muted fw-normal">Payment Status</dt>
+                    <dd class="col-sm-8">
+                        @{
+                            var statusClass = Model?.PaymentStatus?.ToLower() switch
+                            {
+                                "paid" => "text-bg-success",
+                                "partially paid" => "text-bg-warning",
+                                "unpaid" => "text-bg-danger",
+                                _ => "text-bg-secondary"
+                            };
+                        }
+                        <span class="badge rounded-pill @statusClass">@Model?.PaymentStatus</span>
+                    </dd>
+                </dl>
+
+                <hr class="my-4" />
+
+                <h6 class="fw-bold mb-3"><i class="bi bi-cash-stack me-2"></i>Payments</h6>
+
+                @if (Model?.Payments != null && Model.Payments.Any())
+                {
+                    <div class="table-responsive mb-3">
+                        <table class="table table-sm align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Method</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var p in Model.Payments.OrderByDescending(p => p.PaymentDate))
+                                {
+                                    <tr>
+                                        <td>@p.PaymentDate.ToString("dd MMM yyyy")</td>
+                                        <td>৳@p.Amount.ToString("0.00")</td>
+                                        <td>@p.PaymentMethod</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    {
+                        var totalPaid = Model.Payments.Sum(p => p.Amount);
+                        var due = Model.TotalAmount - totalPaid;
+                        if (due > 0)
+                        {
+                            <p class="small text-muted">Amount Due: <strong class="text-danger">৳@due.ToString("0.00")</strong></p>
+                        }
+                    }
+                }
+                else
+                {
+                    <p class="text-muted small mb-3">No payments recorded yet.</p>
+                }
+
+                <a asp-controller="Payments" asp-action="Create" asp-route-invoiceId="@Model?.InvoiceId" class="btn btn-sm btn-outline-primary mb-4">
+                    <i class="bi bi-plus-lg me-1"></i> Record Payment
+                </a>
+
+                <hr class="my-4" />
+
+                <div class="d-flex gap-2 flex-wrap">
+                    <a asp-action="Print" asp-route-id="@Model?.InvoiceId" target="_blank" class="btn btn-primary fw-semibold">
+                        <i class="bi bi-printer me-1"></i> Print Invoice
+                    </a>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.InvoiceId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
-</div>
+
+<style>
+    .btn-primary {
+        background: linear-gradient(90deg, var(--brand-secondary), var(--brand-primary));
+        border: none;
+    }
+
+    .btn-primary:hover,
+    .btn-primary:focus {
+        opacity: .92;
+        background: linear-gradient(90deg, var(--brand-secondary), var(--brand-primary));
+    }
+</style>

@@ -1,54 +1,78 @@
 @model SHMS.Models.Admission
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Admission Details";
 }
 
-<h1>Details</h1>
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4 p-md-5">
 
-<div>
-    <h4>Admission</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Patient)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Patient.Gender)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Ward)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Ward.WardName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Bed)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Bed.BedNumber)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.AdmissionDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.AdmissionDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DischargeDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DischargeDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Status)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Status)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.AdmissionId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="d-flex align-items-center justify-content-center rounded-3 text-white fs-4"
+                         style="width:64px;height:64px;background:linear-gradient(135deg, var(--brand-secondary), var(--brand-primary));">
+                        <i class="bi bi-clipboard2-pulse"></i>
+                    </div>
+                    <div>
+                        <h1 class="h4 mb-0 fw-bold">@(Model?.Patient?.Name ?? "—")</h1>
+                        <p class="text-muted small mb-0">
+                            @(Model?.Ward?.WardName ?? "—") · Bed @(Model?.Bed?.BedNumber ?? "—")
+                        </p>
+                    </div>
+                </div>
+
+                <hr class="mb-4" />
+
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted fw-normal">
+                        <i class="bi bi-calendar-plus me-2"></i>Admission Date
+                    </dt>
+                    <dd class="col-sm-8">@Model?.AdmissionDate.ToString("dd MMM yyyy")</dd>
+
+                    <dt class="col-sm-4 text-muted fw-normal">
+                        <i class="bi bi-calendar-x me-2"></i>Discharge Date
+                    </dt>
+                    <dd class="col-sm-8">@(Model?.DischargeDate?.ToString("dd MMM yyyy") ?? "—")</dd>
+
+                    <dt class="col-sm-4 text-muted fw-normal">
+                        <i class="bi bi-building me-2"></i>Ward
+                    </dt>
+                    <dd class="col-sm-8">@(Model?.Ward?.WardName ?? "—")</dd>
+
+                    <dt class="col-sm-4 text-muted fw-normal">
+                        <i class="bi bi-file-earmark-ruled me-2"></i>Bed
+                    </dt>
+                    <dd class="col-sm-8">@(Model?.Bed?.BedNumber ?? "—")</dd>
+
+                    <dt class="col-sm-4 text-muted fw-normal">
+                        <i class="bi bi-circle-fill me-2" style="font-size:.6rem;"></i>Status
+                    </dt>
+                    <dd class="col-sm-8">
+                        <span class="badge rounded-pill @(Model?.Status == "Admitted" ? "text-bg-primary" : "text-bg-secondary")">
+                            @Model?.Status
+                        </span>
+                    </dd>
+                </dl>
+
+                <hr class="my-4" />
+
+                <div class="d-flex gap-2 flex-wrap">
+                    @if (Model?.Status == "Admitted")
+                    {
+                        <form asp-action="Discharge" asp-route-id="@Model?.AdmissionId" method="post" class="d-inline"
+                              onsubmit="return confirm('Discharge this patient?');">
+                            <button type="submit" class="btn btn-success fw-semibold">
+                                <i class="bi bi-box-arrow-right me-1"></i> Discharge Patient
+                            </button>
+                        </form>
+                    }
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
 </div>

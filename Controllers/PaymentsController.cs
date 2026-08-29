@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -22,121 +21,75 @@ namespace SHMS.Controllers
         // GET: Payments
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Payments.Include(p => p.Invoice);
-            return View(await applicationDbContext.ToListAsync());
+            var payments = await _context.Payments
+                .Include(p => p.Invoice)
+                    .ThenInclude(i => i!.Patient)
+                .OrderByDescending(p => p.PaymentDate)
+                .ToListAsync();
+
+            return View(payments);
         }
 
         // GET: Payments/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var payment = await _context.Payments
                 .Include(p => p.Invoice)
+                    .ThenInclude(i => i!.Patient)
                 .FirstOrDefaultAsync(m => m.PaymentId == id);
-            if (payment == null)
-            {
-                return NotFound();
-            }
+
+            if (payment == null) return NotFound();
 
             return View(payment);
         }
 
         // GET: Payments/Create
-        public IActionResult Create()
+        public IActionResult Create(int? invoiceId)
         {
-            ViewData["InvoiceId"] = new SelectList(_context.Invoices, "InvoiceId", "PaymentStatus");
-            return View();
+            ViewBag.InvoiceId = new SelectList(_context.Invoices, "InvoiceId", "InvoiceId", invoiceId);
+            return View(new Payment { InvoiceId = invoiceId ?? 0 });
         }
 
         // POST: Payments/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("PaymentId,InvoiceId,PaymentDate,Amount,PaymentMethod")] Payment payment)
         {
+            var invoice = await _context.Invoices.FindAsync(payment.InvoiceId);
+
+            if (invoice == null)
+            {
+                ModelState.AddModelError(string.Empty, "Selected invoice not found.");
+            }
+
             if (ModelState.IsValid)
             {
+                payment.PaymentDate = DateTime.SpecifyKind(payment.PaymentDate.Date, DateTimeKind.Utc);
                 _context.Add(payment);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["InvoiceId"] = new SelectList(_context.Invoices, "InvoiceId", "PaymentStatus", payment.InvoiceId);
-            return View(payment);
-        }
 
-        // GET: Payments/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
+                await UpdateInvoicePaymentStatus(payment.InvoiceId);
+
+                return RedirectToAction("Details", "Invoices", new { id = payment.InvoiceId });
             }
 
-            var payment = await _context.Payments.FindAsync(id);
-            if (payment == null)
-            {
-                return NotFound();
-            }
-            ViewData["InvoiceId"] = new SelectList(_context.Invoices, "InvoiceId", "PaymentStatus", payment.InvoiceId);
-            return View(payment);
-        }
-
-        // POST: Payments/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("PaymentId,InvoiceId,PaymentDate,Amount,PaymentMethod")] Payment payment)
-        {
-            if (id != payment.PaymentId)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(payment);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!PaymentExists(payment.PaymentId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["InvoiceId"] = new SelectList(_context.Invoices, "InvoiceId", "PaymentStatus", payment.InvoiceId);
+            ViewBag.InvoiceId = new SelectList(_context.Invoices, "InvoiceId", "InvoiceId", payment.InvoiceId);
             return View(payment);
         }
 
         // GET: Payments/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var payment = await _context.Payments
                 .Include(p => p.Invoice)
+                    .ThenInclude(i => i!.Patient)
                 .FirstOrDefaultAsync(m => m.PaymentId == id);
-            if (payment == null)
-            {
-                return NotFound();
-            }
+
+            if (payment == null) return NotFound();
 
             return View(payment);
         }
@@ -149,11 +102,39 @@ namespace SHMS.Controllers
             var payment = await _context.Payments.FindAsync(id);
             if (payment != null)
             {
+                var invoiceId = payment.InvoiceId;
                 _context.Payments.Remove(payment);
+                await _context.SaveChangesAsync();
+                await UpdateInvoicePaymentStatus(invoiceId);
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Recalculates and saves the invoice's PaymentStatus based on total payments received
+        private async Task UpdateInvoicePaymentStatus(int invoiceId)
+        {
+            var invoice = await _context.Invoices.FindAsync(invoiceId);
+            if (invoice == null) return;
+
+            var totalPaid = await _context.Payments
+                .Where(p => p.InvoiceId == invoiceId)
+                .SumAsync(p => (decimal?)p.Amount) ?? 0;
+
+            if (totalPaid <= 0)
+            {
+                invoice.PaymentStatus = "Unpaid";
+            }
+            else if (totalPaid >= invoice.TotalAmount)
+            {
+                invoice.PaymentStatus = "Paid";
+            }
+            else
+            {
+                invoice.PaymentStatus = "Partially Paid";
             }
 
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
         }
 
         private bool PaymentExists(int id)

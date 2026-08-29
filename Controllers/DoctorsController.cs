@@ -36,6 +36,7 @@ namespace SHMS.Controllers
 
             var doctor = await _context.Doctors
                 .Include(d => d.Department)
+                .Include(d => d.DoctorSchedules)
                 .FirstOrDefaultAsync(m => m.DoctorId == id);
             if (doctor == null)
             {
@@ -53,8 +54,6 @@ namespace SHMS.Controllers
         }
 
         // POST: Doctors/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("DoctorId,Name,Email,Phone,DepartmentId,Specialization,Availability")] Doctor doctor)
@@ -87,8 +86,6 @@ namespace SHMS.Controllers
         }
 
         // POST: Doctors/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("DoctorId,Name,Email,Phone,DepartmentId,Specialization,Availability")] Doctor doctor)
@@ -154,6 +151,40 @@ namespace SHMS.Controllers
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        // POST: Doctors/AddSchedule
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddSchedule(int doctorId, string dayOfWeek, TimeSpan startTime, TimeSpan endTime)
+        {
+            var schedule = new DoctorSchedule
+            {
+                DoctorId = doctorId,
+                DayOfWeek = dayOfWeek,
+                StartTime = startTime,
+                EndTime = endTime
+            };
+
+            _context.DoctorSchedules.Add(schedule);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Details), new { id = doctorId });
+        }
+
+        // POST: Doctors/DeleteSchedule
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteSchedule(int scheduleId, int doctorId)
+        {
+            var schedule = await _context.DoctorSchedules.FindAsync(scheduleId);
+            if (schedule != null)
+            {
+                _context.DoctorSchedules.Remove(schedule);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Details), new { id = doctorId });
         }
 
         private bool DoctorExists(int id)

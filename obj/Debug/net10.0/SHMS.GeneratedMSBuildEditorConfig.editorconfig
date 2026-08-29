@@ -71,6 +71,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXBwb2ludG1lbnRzL0luZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[/Users/shihab/Documents/ASP/SHMS/Views/Appointments/Reschedule.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQXBwb2ludG1lbnRzL1Jlc2NoZWR1bGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [/Users/shihab/Documents/ASP/SHMS/Views/Beds/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvQmVkcy9DcmVhdGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -179,6 +183,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSW52ZW50b3J5SXRlbXMvSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[/Users/shihab/Documents/ASP/SHMS/Views/InventoryItems/Report.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSW52ZW50b3J5SXRlbXMvUmVwb3J0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [/Users/shihab/Documents/ASP/SHMS/Views/Invoices/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSW52b2ljZXMvQ3JlYXRlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -199,6 +207,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSW52b2ljZXMvSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[/Users/shihab/Documents/ASP/SHMS/Views/Invoices/Print.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvSW52b2ljZXMvUHJpbnQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [/Users/shihab/Documents/ASP/SHMS/Views/LabReports/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTGFiUmVwb3J0cy9DcmVhdGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -217,6 +229,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [/Users/shihab/Documents/ASP/SHMS/Views/LabReports/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTGFiUmVwb3J0cy9JbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/shihab/Documents/ASP/SHMS/Views/LabReports/Print.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3MvTGFiUmVwb3J0cy9QcmludC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/shihab/Documents/ASP/SHMS/Views/LabTests/Create.cshtml]

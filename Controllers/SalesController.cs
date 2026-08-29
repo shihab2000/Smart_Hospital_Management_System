@@ -50,25 +50,38 @@ namespace SHMS.Controllers
         public IActionResult Create()
         {
             ViewData["MedicineId"] = new SelectList(_context.Medicines, "MedicineId", "MedicineName");
-            ViewData["PatientId"] = new SelectList(_context.Patients, "PatientId", "Gender");
+            ViewData["PatientId"] = new SelectList(_context.Patients, "PatientId", "Name");
             return View();
         }
 
         // POST: Sales/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("SaleId,PatientId,MedicineId,Quantity,SaleDate,TotalAmount")] Sale sale)
         {
+            var medicine = await _context.Medicines.FindAsync(sale.MedicineId);
+
+            if (medicine == null)
+            {
+                ModelState.AddModelError(string.Empty, "Selected medicine not found.");
+            }
+            else if (medicine.Quantity < sale.Quantity)
+            {
+                ModelState.AddModelError(string.Empty, $"Not enough stock. Only {medicine.Quantity} units of {medicine.MedicineName} available.");
+            }
+
             if (ModelState.IsValid)
             {
+                medicine!.Quantity -= sale.Quantity;
+                sale.SaleDate = DateTime.SpecifyKind(sale.SaleDate.Date, DateTimeKind.Utc);
+
                 _context.Add(sale);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             ViewData["MedicineId"] = new SelectList(_context.Medicines, "MedicineId", "MedicineName", sale.MedicineId);
-            ViewData["PatientId"] = new SelectList(_context.Patients, "PatientId", "Gender", sale.PatientId);
+            ViewData["PatientId"] = new SelectList(_context.Patients, "PatientId", "Name", sale.PatientId);
             return View(sale);
         }
 
@@ -86,13 +99,11 @@ namespace SHMS.Controllers
                 return NotFound();
             }
             ViewData["MedicineId"] = new SelectList(_context.Medicines, "MedicineId", "MedicineName", sale.MedicineId);
-            ViewData["PatientId"] = new SelectList(_context.Patients, "PatientId", "Gender", sale.PatientId);
+            ViewData["PatientId"] = new SelectList(_context.Patients, "PatientId", "Name", sale.PatientId);
             return View(sale);
         }
 
         // POST: Sales/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("SaleId,PatientId,MedicineId,Quantity,SaleDate,TotalAmount")] Sale sale)
@@ -123,7 +134,7 @@ namespace SHMS.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["MedicineId"] = new SelectList(_context.Medicines, "MedicineId", "MedicineName", sale.MedicineId);
-            ViewData["PatientId"] = new SelectList(_context.Patients, "PatientId", "Gender", sale.PatientId);
+            ViewData["PatientId"] = new SelectList(_context.Patients, "PatientId", "Name", sale.PatientId);
             return View(sale);
         }
 

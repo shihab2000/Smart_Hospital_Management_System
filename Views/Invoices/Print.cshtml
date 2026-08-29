@@ -1,0 +1,246 @@
+@model SHMS.Models.Invoice
+
+@{
+    ViewData["Title"] = "Invoice";
+    Layout = null;
+    var totalPaid = Model?.Payments?.Sum(p => p.Amount) ?? 0;
+    var due = (Model?.TotalAmount ?? 0) - totalPaid;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Invoice - @(Model?.Patient?.Name ?? "Patient")</title>
+    <style>
+        :root {
+            --brand-primary: #0d9488;
+            --brand-secondary: #0369a1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #1e293b;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--brand-primary);
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            margin: 0;
+            color: var(--brand-secondary);
+        }
+
+        .header p {
+            margin: 2px 0 0;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .report-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 700;
+            margin: 24px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        table.info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+        }
+
+        table.info-table td {
+            padding: 6px 8px;
+            font-size: 14px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        table.info-table td.label {
+            font-weight: 600;
+            width: 160px;
+            color: #475569;
+        }
+
+        table.charges {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        table.charges th {
+            background: #f1f5f9;
+            text-align: left;
+            padding: 10px;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #475569;
+        }
+
+        table.charges td {
+            padding: 10px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+
+        table.charges td.amount {
+            text-align: right;
+        }
+
+        table.charges tr.total td {
+            font-weight: 700;
+            font-size: 16px;
+            border-top: 2px solid var(--brand-primary);
+            border-bottom: none;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .status-paid { background: #dcfce7; color: #166534; }
+        .status-partial { background: #fef3c7; color: #b45309; }
+        .status-unpaid { background: #fee2e2; color: #991b1b; }
+
+        .footer {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #94a3b8;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 16px;
+        }
+
+        .print-bar {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .print-bar button {
+            background: linear-gradient(90deg, var(--brand-secondary), var(--brand-primary));
+            color: #fff;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        @@media print {
+            .print-bar {
+                display: none;
+            }
+            body {
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="print-bar">
+        <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+    </div>
+
+    <div class="header">
+        <div>
+            <h1>SHMS</h1>
+            <p>Smart Hospital Management System</p>
+        </div>
+        <div style="text-align:right;">
+            <p>Invoice #INV-@Model?.InvoiceId.ToString("D5")</p>
+            <p>Date: @Model?.InvoiceDate.ToString("dd MMM yyyy")</p>
+        </div>
+    </div>
+
+    <div class="report-title">Patient Invoice</div>
+
+    <table class="info-table">
+        <tr>
+            <td class="label">Patient Name</td>
+            <td>@(Model?.Patient?.Name ?? "—")</td>
+            <td class="label">Phone</td>
+            <td>@(Model?.Patient?.Phone ?? "—")</td>
+        </tr>
+        <tr>
+            <td class="label">Address</td>
+            <td colspan="3">@(Model?.Patient?.Address ?? "—")</td>
+        </tr>
+    </table>
+
+    <table class="charges">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th style="text-align:right;">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Consultation Fee</td>
+                <td class="amount">৳@Model?.ConsultationFee.ToString("0.00")</td>
+            </tr>
+            <tr>
+                <td>Medicine Charge</td>
+                <td class="amount">৳@Model?.MedicineCharge.ToString("0.00")</td>
+            </tr>
+            <tr>
+                <td>Laboratory Charge</td>
+                <td class="amount">৳@Model?.LabCharge.ToString("0.00")</td>
+            </tr>
+            <tr class="total">
+                <td>Total Amount</td>
+                <td class="amount">৳@Model?.TotalAmount.ToString("0.00")</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table class="info-table">
+        <tr>
+            <td class="label">Amount Paid</td>
+            <td>৳@totalPaid.ToString("0.00")</td>
+            <td class="label">Amount Due</td>
+            <td>৳@due.ToString("0.00")</td>
+        </tr>
+        <tr>
+            <td class="label">Payment Status</td>
+            <td colspan="3">
+                @{
+                    var badgeClass = Model?.PaymentStatus?.ToLower() switch
+                    {
+                        "paid" => "status-paid",
+                        "partially paid" => "status-partial",
+                        "unpaid" => "status-unpaid",
+                        _ => "status-unpaid"
+                    };
+                }
+                <span class="status-badge @badgeClass">@Model?.PaymentStatus</span>
+            </td>
+        </tr>
+    </table>
+
+    <div class="footer">
+        <span>Generated by SHMS on @DateTime.Now.ToString("dd MMM yyyy, hh:mm tt")</span>
+        <span>Thank you for choosing SHMS.</span>
+    </div>
+
+</body>
+</html>

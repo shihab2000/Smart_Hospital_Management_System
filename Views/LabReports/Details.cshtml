@@ -4,39 +4,76 @@
     ViewData["Title"] = "Details";
 }
 
-<h1>Details</h1>
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4 p-md-5">
 
-<div>
-    <h4>LabReport</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.LabTest)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.LabTest.TestName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Result)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Result)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Remarks)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Remarks)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ReportDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ReportDate)
-        </dd>
-    </dl>
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="d-flex align-items-center justify-content-center rounded-3 text-white fs-4"
+                         style="width:64px;height:64px;background:linear-gradient(135deg, var(--brand-secondary), var(--brand-primary));">
+                        <i class="bi bi-file-earmark-medical"></i>
+                    </div>
+                    <div>
+                        <h1 class="h4 mb-0 fw-bold">Lab Report</h1>
+                        <p class="text-muted small mb-0">
+                            @(Model?.LabTest?.TestName ?? "—") · @Model?.ReportDate.ToString("dd MMM yyyy")
+                        </p>
+                    </div>
+                </div>
+
+                <hr class="mb-4" />
+
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted fw-normal">
+                        <i class="bi bi-clipboard-pulse me-2"></i>@Html.DisplayNameFor(model => model.LabTest)
+                    </dt>
+                    <dd class="col-sm-8">@(Model?.LabTest?.TestName ?? "—")</dd>
+
+                    <dt class="col-sm-4 text-muted fw-normal">
+                        <i class="bi bi-check2-square me-2"></i>@Html.DisplayNameFor(model => model.Result)
+                    </dt>
+                    <dd class="col-sm-8">@Html.DisplayFor(model => model.Result)</dd>
+
+                    <dt class="col-sm-4 text-muted fw-normal">
+                        <i class="bi bi-chat-square-text me-2"></i>@Html.DisplayNameFor(model => model.Remarks)
+                    </dt>
+                    <dd class="col-sm-8">@(Model?.Remarks ?? "—")</dd>
+
+                    <dt class="col-sm-4 text-muted fw-normal">
+                        <i class="bi bi-calendar3 me-2"></i>@Html.DisplayNameFor(model => model.ReportDate)
+                    </dt>
+                    <dd class="col-sm-8">@Model?.ReportDate.ToString("dd MMM yyyy")</dd>
+                </dl>
+
+                <hr class="my-4" />
+
+                <div class="d-flex gap-2 flex-wrap">
+                    <a asp-action="Edit" asp-route-id="@Model?.LabReportId" class="btn btn-primary fw-semibold">
+                        <i class="bi bi-pencil me-1"></i> Edit
+                    </a>
+                    <a asp-action="Print" asp-route-id="@Model?.LabReportId" target="_blank" class="btn btn-outline-primary fw-semibold">
+                        <i class="bi bi-printer me-1"></i> Print / Download
+                    </a>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.LabReportId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
-</div>
+
+<style>
+    .btn-primary {
+        background: linear-gradient(90deg, var(--brand-secondary), var(--brand-primary));
+        border: none;
+    }
+
+    .btn-primary:hover,
+    .btn-primary:focus {
+        opacity: .92;
+        background: linear-gradient(90deg, var(--brand-secondary), var(--brand-primary));
+    }
+</style>

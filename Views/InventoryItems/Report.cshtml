@@ -1,0 +1,231 @@
+@model IEnumerable<SHMS.Models.InventoryItem>
+
+@{
+    ViewData["Title"] = "Inventory Report";
+    Layout = null;
+    var totalItems = Model.Count();
+    var lowStockCount = Model.Count(i => i.Quantity < i.MinimumStock);
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Inventory Report</title>
+    <style>
+        :root {
+            --brand-primary: #0d9488;
+            --brand-secondary: #0369a1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #1e293b;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--brand-primary);
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            margin: 0;
+            color: var(--brand-secondary);
+        }
+
+        .header p {
+            margin: 2px 0 0;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .report-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 700;
+            margin: 24px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .summary {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .summary-box {
+            flex: 1;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .summary-box .num {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--brand-secondary);
+        }
+
+        .summary-box.warn .num {
+            color: #b45309;
+        }
+
+        .summary-box .lbl {
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th {
+            background: #f1f5f9;
+            text-align: left;
+            padding: 8px 10px;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #475569;
+        }
+
+        td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        tr.low td {
+            background: #fffbeb;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .tag.low {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .tag.ok {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .footer {
+            margin-top: 40px;
+            font-size: 12px;
+            color: #94a3b8;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 16px;
+        }
+
+        .print-bar {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .print-bar button {
+            background: linear-gradient(90deg, var(--brand-secondary), var(--brand-primary));
+            color: #fff;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        @@media print {
+            .print-bar {
+                display: none;
+            }
+            body {
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="print-bar">
+        <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+    </div>
+
+    <div class="header">
+        <div>
+            <h1>SHMS</h1>
+            <p>Smart Hospital Management System</p>
+        </div>
+        <div style="text-align:right;">
+            <p>Generated: @DateTime.Now.ToString("dd MMM yyyy, hh:mm tt")</p>
+        </div>
+    </div>
+
+    <div class="report-title">Inventory Stock Report</div>
+
+    <div class="summary">
+        <div class="summary-box">
+            <div class="num">@totalItems</div>
+            <div class="lbl">Total Items</div>
+        </div>
+        <div class="summary-box warn">
+            <div class="num">@lowStockCount</div>
+            <div class="lbl">Low Stock Items</div>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Item Name</th>
+                <th>Type</th>
+                <th>Quantity</th>
+                <th>Minimum Stock</th>
+                <th>Unit</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                var isLow = item.Quantity < item.MinimumStock;
+                <tr class="@(isLow ? "low" : "")">
+                    <td>@item.ItemName</td>
+                    <td>@item.ItemType</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.MinimumStock</td>
+                    <td>@item.Unit</td>
+                    <td>
+                        <span class="tag @(isLow ? "low" : "ok")">
+                            @(isLow ? "Low Stock" : item.Status)
+                        </span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="footer">
+        This is a system-generated report from SHMS.
+    </div>
+
+</body>
+</html>

@@ -29,7 +29,7 @@ namespace SHMS.Controllers
 
             if (today)
             {
-                var todayDate = DateTime.Today;
+                var todayDate = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
                 appointments = appointments.Where(a => a.AppointmentDate.Date == todayDate);
             }
 
@@ -69,6 +69,8 @@ namespace SHMS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("AppointmentId,PatientId,DoctorId,AppointmentDate,AppointmentTime,Reason,Status")] Appointment appointment)
         {
+            appointment.AppointmentDate = DateTime.SpecifyKind(appointment.AppointmentDate.Date, DateTimeKind.Utc);
+
             var availability = await CheckDoctorAvailability(appointment.DoctorId, appointment.AppointmentDate, appointment.AppointmentTime, null);
             if (!availability.IsAvailable)
             {
@@ -106,6 +108,8 @@ namespace SHMS.Controllers
         public async Task<IActionResult> Edit(int id, [Bind("AppointmentId,PatientId,DoctorId,AppointmentDate,AppointmentTime,Reason,Status")] Appointment appointment)
         {
             if (id != appointment.AppointmentId) return NotFound();
+
+            appointment.AppointmentDate = DateTime.SpecifyKind(appointment.AppointmentDate.Date, DateTimeKind.Utc);
 
             var availability = await CheckDoctorAvailability(appointment.DoctorId, appointment.AppointmentDate, appointment.AppointmentTime, appointment.AppointmentId);
             if (!availability.IsAvailable)
@@ -162,7 +166,7 @@ namespace SHMS.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // POST: Appointments/Cancel/5 — quick status change, no full edit form
+        // POST: Appointments/Cancel/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Cancel(int id)
@@ -191,7 +195,7 @@ namespace SHMS.Controllers
             return View(appointment);
         }
 
-        // POST: Appointments/Reschedule/5 — only date/time change, keeps everything else
+        // POST: Appointments/Reschedule/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Reschedule(int id, DateTime appointmentDate, TimeSpan appointmentTime)
@@ -199,7 +203,9 @@ namespace SHMS.Controllers
             var appointment = await _context.Appointments.FindAsync(id);
             if (appointment == null) return NotFound();
 
-            var availability = await CheckDoctorAvailability(appointment.DoctorId, appointmentDate, appointmentTime, appointment.AppointmentId);
+            var normalizedDate = DateTime.SpecifyKind(appointmentDate.Date, DateTimeKind.Utc);
+
+            var availability = await CheckDoctorAvailability(appointment.DoctorId, normalizedDate, appointmentTime, appointment.AppointmentId);
             if (!availability.IsAvailable)
             {
                 ModelState.AddModelError(string.Empty, availability.Message);
@@ -210,9 +216,9 @@ namespace SHMS.Controllers
                 return View(reloaded);
             }
 
-            appointment.AppointmentDate = appointmentDate;
+            appointment.AppointmentDate = normalizedDate;
             appointment.AppointmentTime = appointmentTime;
-            appointment.Status = "Pending"; // re-confirmation needed after reschedule
+            appointment.Status = "Pending";
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Details), new { id = appointment.AppointmentId });
@@ -221,7 +227,8 @@ namespace SHMS.Controllers
         // Shared availability check: doctor's weekly schedule + no double-booking
         private async Task<(bool IsAvailable, string Message)> CheckDoctorAvailability(int doctorId, DateTime date, TimeSpan time, int? excludingAppointmentId)
         {
-            var dayName = date.DayOfWeek.ToString();
+            var normalizedDate = DateTime.SpecifyKind(date.Date, DateTimeKind.Utc);
+            var dayName = normalizedDate.DayOfWeek.ToString();
 
             var hasSchedule = await _context.DoctorSchedules
                 .AnyAsync(s => s.DoctorId == doctorId
@@ -236,7 +243,7 @@ namespace SHMS.Controllers
 
             var conflictQuery = _context.Appointments.Where(a =>
                 a.DoctorId == doctorId &&
-                a.AppointmentDate.Date == date.Date &&
+                a.AppointmentDate.Date == normalizedDate &&
                 a.AppointmentTime == time &&
                 a.Status != "Cancelled");
 

@@ -1,71 +1,89 @@
 @model IEnumerable<SHMS.Models.Invoice>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Invoices";
 }
 
-<h1>Index</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 fw-bold mb-1">Invoices</h1>
+        <p class="text-muted small mb-0">Manage patient billing and invoices.</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary fw-semibold">
+        <i class="bi bi-plus-lg me-1"></i> Generate Invoice
+    </a>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Patient)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.InvoiceDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ConsultationFee)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.MedicineCharge)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.LabCharge)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.TotalAmount)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PaymentStatus)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-4">@Html.DisplayNameFor(model => model.Patient)</th>
+                    <th>@Html.DisplayNameFor(model => model.InvoiceDate)</th>
+                    <th>@Html.DisplayNameFor(model => model.TotalAmount)</th>
+                    <th>@Html.DisplayNameFor(model => model.PaymentStatus)</th>
+                    <th class="text-end pe-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
 @foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Patient.Gender)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.InvoiceDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ConsultationFee)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.MedicineCharge)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.LabCharge)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.TotalAmount)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PaymentStatus)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.InvoiceId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.InvoiceId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.InvoiceId">Delete</a>
-            </td>
-        </tr>
+                <tr>
+                    <td class="ps-4 fw-semibold">@(item.Patient?.Name ?? "—")</td>
+                    <td class="text-muted">@item.InvoiceDate.ToString("dd MMM yyyy")</td>
+                    <td class="text-muted">৳@item.TotalAmount.ToString("0.00")</td>
+                    <td>
+                        @{
+                            var statusClass = item.PaymentStatus?.ToLower() switch
+                            {
+                                "paid" => "text-bg-success",
+                                "partially paid" => "text-bg-warning",
+                                "unpaid" => "text-bg-danger",
+                                _ => "text-bg-secondary"
+                            };
+                        }
+                        <span class="badge rounded-pill @statusClass">@item.PaymentStatus</span>
+                    </td>
+                    <td class="text-end pe-4">
+                        <a asp-action="Details" asp-route-id="@item.InvoiceId" class="btn btn-sm btn-outline-secondary border-0" title="Details">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a asp-action="Print" asp-route-id="@item.InvoiceId" target="_blank" class="btn btn-sm btn-outline-primary border-0" title="Print">
+                            <i class="bi bi-printer"></i>
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@item.InvoiceId" class="btn btn-sm btn-outline-danger border-0" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>
+                </tr>
 }
-    </tbody>
-</table>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center text-muted py-5">
+        <i class="bi bi-receipt display-6 d-block mb-2"></i>
+        No invoices found.
+    </div>
+}
+
+<style>
+    .btn-primary {
+        background: linear-gradient(90deg, var(--brand-secondary), var(--brand-primary));
+        border: none;
+    }
+
+    .btn-primary:hover,
+    .btn-primary:focus {
+        opacity: .92;
+        background: linear-gradient(90deg, var(--brand-secondary), var(--brand-primary));
+    }
+
+    .table > :not(caption) > * > * {
+        padding-top: .9rem;
+        padding-bottom: .9rem;
+    }
+</style>

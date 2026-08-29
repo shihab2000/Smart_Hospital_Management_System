@@ -160,5 +160,21 @@ namespace SHMS.Controllers
         {
             return _context.LabReports.Any(e => e.LabReportId == id);
         }
+
+
+        // GET: LabReports/Print/5
+        public async Task<IActionResult> Print(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var report = await _context.LabReports
+                .Include(r => r.LabTest)
+                    .ThenInclude(t => t!.Patient)
+                .FirstOrDefaultAsync(r => r.LabReportId == id);
+
+            if (report == null) return NotFound();
+
+            return View(report);
+        }
     }
 }

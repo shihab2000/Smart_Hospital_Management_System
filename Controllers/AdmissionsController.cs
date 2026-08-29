@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -20,29 +19,38 @@ namespace SHMS.Controllers
         }
 
         // GET: Admissions
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(bool activeOnly = false)
         {
-            var applicationDbContext = _context.Admissions.Include(a => a.Bed).Include(a => a.Patient).Include(a => a.Ward);
-            return View(await applicationDbContext.ToListAsync());
+            var admissions = _context.Admissions
+                .Include(a => a.Patient)
+                .Include(a => a.Ward)
+                .Include(a => a.Bed)
+                .AsQueryable();
+
+            if (activeOnly)
+            {
+                admissions = admissions.Where(a => a.Status == "Admitted");
+            }
+
+            ViewData["ActiveOnly"] = activeOnly;
+
+            return View(await admissions
+                .OrderByDescending(a => a.AdmissionDate)
+                .ToListAsync());
         }
 
         // GET: Admissions/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var admission = await _context.Admissions
-                .Include(a => a.Bed)
                 .Include(a => a.Patient)
                 .Include(a => a.Ward)
+                .Include(a => a.Bed)
                 .FirstOrDefaultAsync(m => m.AdmissionId == id);
-            if (admission == null)
-            {
-                return NotFound();
-            }
+
+            if (admission == null) return NotFound();
 
             return View(admission);
         }
@@ -50,105 +58,94 @@ namespace SHMS.Controllers
         // GET: Admissions/Create
         public IActionResult Create()
         {
-            ViewData["BedId"] = new SelectList(_context.Beds, "BedId", "BedNumber");
-            ViewData["PatientId"] = new SelectList(_context.Patients, "PatientId", "Gender");
-            ViewData["WardId"] = new SelectList(_context.Wards, "WardId", "WardName");
+            ViewBag.PatientId = new SelectList(_context.Patients, "PatientId", "Name");
+            ViewBag.WardId = new SelectList(_context.Wards, "WardId", "WardName");
+            ViewBag.BedId = new SelectList(
+                _context.Beds.Where(b => b.Status == "Available"), "BedId", "BedNumber");
             return View();
         }
 
+        // GET: Admissions/GetAvailableBeds?wardId=3  (AJAX helper — only show free beds in the chosen ward)
+        [HttpGet]
+        public async Task<IActionResult> GetAvailableBeds(int wardId)
+        {
+            var beds = await _context.Beds
+                .Where(b => b.WardId == wardId && b.Status == "Available")
+                .Select(b => new { b.BedId, b.BedNumber })
+                .ToListAsync();
+
+            return Json(beds);
+        }
+
         // POST: Admissions/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("AdmissionId,PatientId,WardId,BedId,AdmissionDate,DischargeDate,Status")] Admission admission)
+        public async Task<IActionResult> Create([Bind("AdmissionId,PatientId,WardId,BedId,AdmissionDate,Status")] Admission admission)
         {
+            var bed = await _context.Beds.FindAsync(admission.BedId);
+
+            if (bed == null)
+            {
+                ModelState.AddModelError(string.Empty, "Selected bed not found.");
+            }
+            else if (bed.Status != "Available")
+            {
+                ModelState.AddModelError(string.Empty, "This bed is no longer available. Please choose another.");
+            }
+
+            admission.Status = "Admitted";
+            admission.AdmissionDate = DateTime.SpecifyKind(admission.AdmissionDate.Date, DateTimeKind.Utc);
+            admission.DischargeDate = null;
+
             if (ModelState.IsValid)
             {
+                bed!.Status = "Occupied";
+
                 _context.Add(admission);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["BedId"] = new SelectList(_context.Beds, "BedId", "BedNumber", admission.BedId);
-            ViewData["PatientId"] = new SelectList(_context.Patients, "PatientId", "Gender", admission.PatientId);
-            ViewData["WardId"] = new SelectList(_context.Wards, "WardId", "WardName", admission.WardId);
+
+            ViewBag.PatientId = new SelectList(_context.Patients, "PatientId", "Name", admission.PatientId);
+            ViewBag.WardId = new SelectList(_context.Wards, "WardId", "WardName", admission.WardId);
+            ViewBag.BedId = new SelectList(
+                _context.Beds.Where(b => b.Status == "Available"), "BedId", "BedNumber", admission.BedId);
             return View(admission);
         }
 
-        // GET: Admissions/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var admission = await _context.Admissions.FindAsync(id);
-            if (admission == null)
-            {
-                return NotFound();
-            }
-            ViewData["BedId"] = new SelectList(_context.Beds, "BedId", "BedNumber", admission.BedId);
-            ViewData["PatientId"] = new SelectList(_context.Patients, "PatientId", "Gender", admission.PatientId);
-            ViewData["WardId"] = new SelectList(_context.Wards, "WardId", "WardName", admission.WardId);
-            return View(admission);
-        }
-
-        // POST: Admissions/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Admissions/Discharge/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("AdmissionId,PatientId,WardId,BedId,AdmissionDate,DischargeDate,Status")] Admission admission)
+        public async Task<IActionResult> Discharge(int id)
         {
-            if (id != admission.AdmissionId)
+            var admission = await _context.Admissions.FindAsync(id);
+            if (admission == null) return NotFound();
+
+            admission.Status = "Discharged";
+            admission.DischargeDate = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
+
+            var bed = await _context.Beds.FindAsync(admission.BedId);
+            if (bed != null)
             {
-                return NotFound();
+                bed.Status = "Available";
             }
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(admission);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!AdmissionExists(admission.AdmissionId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["BedId"] = new SelectList(_context.Beds, "BedId", "BedNumber", admission.BedId);
-            ViewData["PatientId"] = new SelectList(_context.Patients, "PatientId", "Gender", admission.PatientId);
-            ViewData["WardId"] = new SelectList(_context.Wards, "WardId", "WardName", admission.WardId);
-            return View(admission);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Details), new { id = admission.AdmissionId });
         }
 
         // GET: Admissions/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var admission = await _context.Admissions
-                .Include(a => a.Bed)
                 .Include(a => a.Patient)
                 .Include(a => a.Ward)
+                .Include(a => a.Bed)
                 .FirstOrDefaultAsync(m => m.AdmissionId == id);
-            if (admission == null)
-            {
-                return NotFound();
-            }
+
+            if (admission == null) return NotFound();
 
             return View(admission);
         }
@@ -161,6 +158,16 @@ namespace SHMS.Controllers
             var admission = await _context.Admissions.FindAsync(id);
             if (admission != null)
             {
+                // Free the bed if this admission was still active
+                if (admission.Status == "Admitted")
+                {
+                    var bed = await _context.Beds.FindAsync(admission.BedId);
+                    if (bed != null)
+                    {
+                        bed.Status = "Available";
+                    }
+                }
+
                 _context.Admissions.Remove(admission);
             }
 

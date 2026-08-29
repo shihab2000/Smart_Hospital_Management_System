@@ -54,24 +54,29 @@ namespace SHMS.Controllers
             return View();
         }
 
-        // POST: Purchases/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("PurchaseId,SupplierId,PurchaseDate,MedicineId,Quantity,TotalAmount")] Purchase purchase)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.Add(purchase);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["MedicineId"] = new SelectList(_context.Medicines, "MedicineId", "MedicineName", purchase.MedicineId);
-            ViewData["SupplierId"] = new SelectList(_context.Suppliers, "SupplierId", "SupplierName", purchase.SupplierId);
-            return View(purchase);
-        }
+        // POST: Purchases/QuickAddSupplier — AJAX endpoint for the quick-add modal
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> QuickAddSupplier(string supplierName, string? phone, string? email, string? address)
+{
+    if (string.IsNullOrWhiteSpace(supplierName))
+    {
+        return BadRequest(new { message = "Supplier name is required." });
+    }
 
+    var supplier = new Supplier
+    {
+        SupplierName = supplierName,
+        Phone = phone,
+        Email = email,
+        Address = address
+    };
+
+    _context.Suppliers.Add(supplier);
+    await _context.SaveChangesAsync();
+
+    return Json(new { supplierId = supplier.SupplierId, supplierName = supplier.SupplierName });
+}
         // GET: Purchases/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -91,8 +96,6 @@ namespace SHMS.Controllers
         }
 
         // POST: Purchases/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("PurchaseId,SupplierId,PurchaseDate,MedicineId,Quantity,TotalAmount")] Purchase purchase)

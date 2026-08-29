@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -22,25 +21,25 @@ namespace SHMS.Controllers
         // GET: Invoices
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Invoices.Include(i => i.Patient);
-            return View(await applicationDbContext.ToListAsync());
+            var invoices = await _context.Invoices
+                .Include(i => i.Patient)
+                .OrderByDescending(i => i.InvoiceDate)
+                .ToListAsync();
+
+            return View(invoices);
         }
 
         // GET: Invoices/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var invoice = await _context.Invoices
                 .Include(i => i.Patient)
+                .Include(i => i.Payments)
                 .FirstOrDefaultAsync(m => m.InvoiceId == id);
-            if (invoice == null)
-            {
-                return NotFound();
-            }
+
+            if (invoice == null) return NotFound();
 
             return View(invoice);
         }
@@ -48,95 +47,55 @@ namespace SHMS.Controllers
         // GET: Invoices/Create
         public IActionResult Create()
         {
-            ViewData["PatientId"] = new SelectList(_context.Patients, "PatientId", "Gender");
+            ViewBag.PatientId = new SelectList(_context.Patients, "PatientId", "Name");
             return View();
         }
 
+        // GET: Invoices/GetPatientCharges?patientId=5  (AJAX helper for auto-calculation)
+        [HttpGet]
+        public async Task<IActionResult> GetPatientCharges(int patientId)
+        {
+            var medicineCharge = await _context.Sales
+                .Where(s => s.PatientId == patientId)
+                .SumAsync(s => (decimal?)s.TotalAmount) ?? 0;
+
+            var labCharge = await _context.LabTests
+                .Where(t => t.PatientId == patientId)
+                .SumAsync(t => (decimal?)t.TestFee) ?? 0;
+
+            return Json(new { medicineCharge, labCharge });
+        }
+
         // POST: Invoices/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("InvoiceId,PatientId,InvoiceDate,ConsultationFee,MedicineCharge,LabCharge,TotalAmount,PaymentStatus")] Invoice invoice)
+        public async Task<IActionResult> Create([Bind("InvoiceId,PatientId,InvoiceDate,ConsultationFee,MedicineCharge,LabCharge")] Invoice invoice)
         {
+            invoice.TotalAmount = invoice.ConsultationFee + invoice.MedicineCharge + invoice.LabCharge;
+            invoice.PaymentStatus = "Unpaid";
+            invoice.InvoiceDate = DateTime.SpecifyKind(invoice.InvoiceDate.Date, DateTimeKind.Utc);
+
             if (ModelState.IsValid)
             {
                 _context.Add(invoice);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["PatientId"] = new SelectList(_context.Patients, "PatientId", "Gender", invoice.PatientId);
-            return View(invoice);
-        }
-
-        // GET: Invoices/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
+                return RedirectToAction(nameof(Details), new { id = invoice.InvoiceId });
             }
 
-            var invoice = await _context.Invoices.FindAsync(id);
-            if (invoice == null)
-            {
-                return NotFound();
-            }
-            ViewData["PatientId"] = new SelectList(_context.Patients, "PatientId", "Gender", invoice.PatientId);
-            return View(invoice);
-        }
-
-        // POST: Invoices/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("InvoiceId,PatientId,InvoiceDate,ConsultationFee,MedicineCharge,LabCharge,TotalAmount,PaymentStatus")] Invoice invoice)
-        {
-            if (id != invoice.InvoiceId)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(invoice);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!InvoiceExists(invoice.InvoiceId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["PatientId"] = new SelectList(_context.Patients, "PatientId", "Gender", invoice.PatientId);
+            ViewBag.PatientId = new SelectList(_context.Patients, "PatientId", "Name", invoice.PatientId);
             return View(invoice);
         }
 
         // GET: Invoices/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var invoice = await _context.Invoices
                 .Include(i => i.Patient)
                 .FirstOrDefaultAsync(m => m.InvoiceId == id);
-            if (invoice == null)
-            {
-                return NotFound();
-            }
+
+            if (invoice == null) return NotFound();
 
             return View(invoice);
         }
@@ -151,9 +110,23 @@ namespace SHMS.Controllers
             {
                 _context.Invoices.Remove(invoice);
             }
-
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        // GET: Invoices/Print/5
+        public async Task<IActionResult> Print(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var invoice = await _context.Invoices
+                .Include(i => i.Patient)
+                .Include(i => i.Payments)
+                .FirstOrDefaultAsync(m => m.InvoiceId == id);
+
+            if (invoice == null) return NotFound();
+
+            return View(invoice);
         }
 
         private bool InvoiceExists(int id)
