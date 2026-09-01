@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ using SHMS.Models;
 
 namespace SHMS.Controllers
 {
+    [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist,Accountant")]
     public class PaymentsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -79,7 +81,8 @@ namespace SHMS.Controllers
             return View(payment);
         }
 
-        // GET: Payments/Delete/5
+        // GET: Payments/Delete/5 — Admins only
+        [Authorize(Roles = "Super Admin,Hospital Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -97,6 +100,7 @@ namespace SHMS.Controllers
         // POST: Payments/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var payment = await _context.Payments.FindAsync(id);

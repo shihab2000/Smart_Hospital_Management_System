@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,7 @@ using SHMS.Models;
 
 namespace SHMS.Controllers
 {
+    [Authorize(Roles = "Super Admin,Hospital Admin,Laboratory Technician")]
     public class LabReportsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -53,14 +55,13 @@ namespace SHMS.Controllers
         }
 
         // POST: LabReports/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("LabReportId,LabTestId,Result,Remarks,ReportDate")] LabReport labReport)
         {
             if (ModelState.IsValid)
             {
+                labReport.ReportDate = DateTime.SpecifyKind(labReport.ReportDate.Date, DateTimeKind.Utc);
                 _context.Add(labReport);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -87,8 +88,6 @@ namespace SHMS.Controllers
         }
 
         // POST: LabReports/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("LabReportId,LabTestId,Result,Remarks,ReportDate")] LabReport labReport)
@@ -102,6 +101,7 @@ namespace SHMS.Controllers
             {
                 try
                 {
+                    labReport.ReportDate = DateTime.SpecifyKind(labReport.ReportDate.Date, DateTimeKind.Utc);
                     _context.Update(labReport);
                     await _context.SaveChangesAsync();
                 }
@@ -122,7 +122,8 @@ namespace SHMS.Controllers
             return View(labReport);
         }
 
-        // GET: LabReports/Delete/5
+        // GET: LabReports/Delete/5 — Admins only
+        [Authorize(Roles = "Super Admin,Hospital Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -144,6 +145,7 @@ namespace SHMS.Controllers
         // POST: LabReports/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var labReport = await _context.LabReports.FindAsync(id);
@@ -160,7 +162,6 @@ namespace SHMS.Controllers
         {
             return _context.LabReports.Any(e => e.LabReportId == id);
         }
-
 
         // GET: LabReports/Print/5
         public async Task<IActionResult> Print(int? id)

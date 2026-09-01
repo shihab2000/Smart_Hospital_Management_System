@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -19,22 +20,22 @@ namespace SHMS.Controllers
             _context = context;
         }
 
-       // GET: Beds
-public async Task<IActionResult> Index(bool availableOnly = false)
-{
-    var beds = _context.Beds.Include(b => b.Ward).AsQueryable();
+        // GET: Beds — public
+        public async Task<IActionResult> Index(bool availableOnly = false)
+        {
+            var beds = _context.Beds.Include(b => b.Ward).AsQueryable();
 
-    if (availableOnly)
-    {
-        beds = beds.Where(b => b.Status == "Available");
-    }
+            if (availableOnly)
+            {
+                beds = beds.Where(b => b.Status == "Available");
+            }
 
-    ViewData["AvailableOnly"] = availableOnly;
+            ViewData["AvailableOnly"] = availableOnly;
 
-    return View(await beds.OrderBy(b => b.Ward!.WardName).ThenBy(b => b.BedNumber).ToListAsync());
-}
+            return View(await beds.OrderBy(b => b.Ward!.WardName).ThenBy(b => b.BedNumber).ToListAsync());
+        }
 
-        // GET: Beds/Details/5
+        // GET: Beds/Details/5 — public
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -54,6 +55,7 @@ public async Task<IActionResult> Index(bool availableOnly = false)
         }
 
         // GET: Beds/Create
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public IActionResult Create()
         {
             ViewData["WardId"] = new SelectList(_context.Wards, "WardId", "WardName");
@@ -61,10 +63,9 @@ public async Task<IActionResult> Index(bool availableOnly = false)
         }
 
         // POST: Beds/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public async Task<IActionResult> Create([Bind("BedId,WardId,BedNumber,Status")] Bed bed)
         {
             if (ModelState.IsValid)
@@ -78,6 +79,7 @@ public async Task<IActionResult> Index(bool availableOnly = false)
         }
 
         // GET: Beds/Edit/5
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -95,10 +97,9 @@ public async Task<IActionResult> Index(bool availableOnly = false)
         }
 
         // POST: Beds/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public async Task<IActionResult> Edit(int id, [Bind("BedId,WardId,BedNumber,Status")] Bed bed)
         {
             if (id != bed.BedId)
@@ -131,6 +132,7 @@ public async Task<IActionResult> Index(bool availableOnly = false)
         }
 
         // GET: Beds/Delete/5
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -152,6 +154,7 @@ public async Task<IActionResult> Index(bool availableOnly = false)
         // POST: Beds/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var bed = await _context.Beds.FindAsync(id);

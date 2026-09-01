@@ -27,7 +27,14 @@ namespace SHMS.Models
 
         public bool Availability { get; set; }
 
-        public ICollection<Appointment>? Appointments { get; set; }
+        // Links this doctor record to a login account (User), so a logged-in
+        // doctor can be matched to their own appointments/records.
+        public int? UserId { get; set; }
+
+        [ForeignKey("UserId")]
+        public User? User { get; set; }
+
+        public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
         public ICollection<DoctorSchedule> DoctorSchedules { get; set; } = new List<DoctorSchedule>();
     }
 }

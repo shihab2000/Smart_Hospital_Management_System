@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,7 @@ using SHMS.Models;
 
 namespace SHMS.Controllers
 {
+    [Authorize(Roles = "Super Admin,Hospital Admin,Laboratory Technician")]
     public class LabTestsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -48,24 +50,23 @@ namespace SHMS.Controllers
         // GET: LabTests/Create
         public IActionResult Create()
         {
-            ViewData["PatientId"] = new SelectList(_context.Patients, "PatientId", "Gender");
+            ViewData["PatientId"] = new SelectList(_context.Patients, "PatientId", "Name");
             return View();
         }
 
         // POST: LabTests/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("LabTestId,PatientId,TestName,TestDate,TestStatus,TestFee")] LabTest labTest)
         {
             if (ModelState.IsValid)
             {
+                labTest.TestDate = DateTime.SpecifyKind(labTest.TestDate.Date, DateTimeKind.Utc);
                 _context.Add(labTest);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["PatientId"] = new SelectList(_context.Patients, "PatientId", "Gender", labTest.PatientId);
+            ViewData["PatientId"] = new SelectList(_context.Patients, "PatientId", "Name", labTest.PatientId);
             return View(labTest);
         }
 
@@ -82,13 +83,11 @@ namespace SHMS.Controllers
             {
                 return NotFound();
             }
-            ViewData["PatientId"] = new SelectList(_context.Patients, "PatientId", "Gender", labTest.PatientId);
+            ViewData["PatientId"] = new SelectList(_context.Patients, "PatientId", "Name", labTest.PatientId);
             return View(labTest);
         }
 
         // POST: LabTests/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("LabTestId,PatientId,TestName,TestDate,TestStatus,TestFee")] LabTest labTest)
@@ -102,6 +101,7 @@ namespace SHMS.Controllers
             {
                 try
                 {
+                    labTest.TestDate = DateTime.SpecifyKind(labTest.TestDate.Date, DateTimeKind.Utc);
                     _context.Update(labTest);
                     await _context.SaveChangesAsync();
                 }
@@ -118,11 +118,12 @@ namespace SHMS.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["PatientId"] = new SelectList(_context.Patients, "PatientId", "Gender", labTest.PatientId);
+            ViewData["PatientId"] = new SelectList(_context.Patients, "PatientId", "Name", labTest.PatientId);
             return View(labTest);
         }
 
-        // GET: LabTests/Delete/5
+        // GET: LabTests/Delete/5 — Admins only
+        [Authorize(Roles = "Super Admin,Hospital Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -144,6 +145,7 @@ namespace SHMS.Controllers
         // POST: LabTests/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var labTest = await _context.LabTests.FindAsync(id);

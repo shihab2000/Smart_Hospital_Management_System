@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -19,14 +20,14 @@ namespace SHMS.Controllers
             _context = context;
         }
 
-        // GET: Sales
+        // GET: Sales — public
         public async Task<IActionResult> Index()
         {
             var applicationDbContext = _context.Sales.Include(s => s.Medicine).Include(s => s.Patient);
             return View(await applicationDbContext.ToListAsync());
         }
 
-        // GET: Sales/Details/5
+        // GET: Sales/Details/5 — public
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -47,6 +48,7 @@ namespace SHMS.Controllers
         }
 
         // GET: Sales/Create
+        [Authorize(Roles = "Super Admin,Hospital Admin,Pharmacist")]
         public IActionResult Create()
         {
             ViewData["MedicineId"] = new SelectList(_context.Medicines, "MedicineId", "MedicineName");
@@ -57,6 +59,7 @@ namespace SHMS.Controllers
         // POST: Sales/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin,Pharmacist")]
         public async Task<IActionResult> Create([Bind("SaleId,PatientId,MedicineId,Quantity,SaleDate,TotalAmount")] Sale sale)
         {
             var medicine = await _context.Medicines.FindAsync(sale.MedicineId);
@@ -86,6 +89,7 @@ namespace SHMS.Controllers
         }
 
         // GET: Sales/Edit/5
+        [Authorize(Roles = "Super Admin,Hospital Admin,Pharmacist")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -106,6 +110,7 @@ namespace SHMS.Controllers
         // POST: Sales/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin,Pharmacist")]
         public async Task<IActionResult> Edit(int id, [Bind("SaleId,PatientId,MedicineId,Quantity,SaleDate,TotalAmount")] Sale sale)
         {
             if (id != sale.SaleId)
@@ -139,6 +144,7 @@ namespace SHMS.Controllers
         }
 
         // GET: Sales/Delete/5
+        [Authorize(Roles = "Super Admin,Hospital Admin,Pharmacist")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -161,6 +167,7 @@ namespace SHMS.Controllers
         // POST: Sales/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin,Pharmacist")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var sale = await _context.Sales.FindAsync(id);

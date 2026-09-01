@@ -1,0 +1,157 @@
+@{
+    ViewData["Title"] = "Reports";
+}
+
+<div class="mb-4">
+    <h1 class="h3 fw-bold mb-1">Reports</h1>
+    <p class="text-muted small mb-0">Generate reports across all hospital modules.</p>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6 col-lg-4">
+        <a asp-action="PatientReport" class="text-decoration-none">
+            <div class="card border-0 shadow-sm rounded-4 h-100 report-card">
+                <div class="card-body p-4">
+                    <div class="report-icon bg-teal"><i class="bi bi-people-fill"></i></div>
+                    <h5 class="fw-bold mt-3 mb-1">Patient Report</h5>
+                    <p class="text-muted small mb-0">Full list of registered patients.</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a asp-action="DoctorReport" class="text-decoration-none">
+            <div class="card border-0 shadow-sm rounded-4 h-100 report-card">
+                <div class="card-body p-4">
+                    <div class="report-icon bg-blue"><i class="bi bi-person-badge-fill"></i></div>
+                    <h5 class="fw-bold mt-3 mb-1">Doctor Report</h5>
+                    <p class="text-muted small mb-0">Doctor list with appointment counts.</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a asp-action="AppointmentReport" class="text-decoration-none">
+            <div class="card border-0 shadow-sm rounded-4 h-100 report-card">
+                <div class="report-icon bg-purple"><i class="bi bi-calendar-check-fill"></i></div>
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mt-3 mb-1">Appointment Report</h5>
+                    <p class="text-muted small mb-0">Appointments by date range and status.</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a asp-action="MedicalRecordReport" class="text-decoration-none">
+            <div class="card border-0 shadow-sm rounded-4 h-100 report-card">
+                <div class="card-body p-4">
+                    <div class="report-icon bg-amber"><i class="bi bi-file-medical-fill"></i></div>
+                    <h5 class="fw-bold mt-3 mb-1">Medical Record Report</h5>
+                    <p class="text-muted small mb-0">Diagnoses and treatments over time.</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a asp-action="PharmacyReport" class="text-decoration-none">
+            <div class="card border-0 shadow-sm rounded-4 h-100 report-card">
+                <div class="card-body p-4">
+                    <div class="report-icon bg-teal"><i class="bi bi-capsule"></i></div>
+                    <h5 class="fw-bold mt-3 mb-1">Pharmacy Report</h5>
+                    <p class="text-muted small mb-0">Medicine purchases and sales.</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a asp-action="LaboratoryReport" class="text-decoration-none">
+            <div class="card border-0 shadow-sm rounded-4 h-100 report-card">
+                <div class="card-body p-4">
+                    <div class="report-icon bg-blue"><i class="bi bi-clipboard-pulse-fill"></i></div>
+                    <h5 class="fw-bold mt-3 mb-1">Laboratory Report</h5>
+                    <p class="text-muted small mb-0">Lab tests conducted and results.</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a asp-action="RevenueReport" class="text-decoration-none">
+            <div class="card border-0 shadow-sm rounded-4 h-100 report-card">
+                <div class="card-body p-4">
+                    <div class="report-icon bg-amber"><i class="bi bi-graph-up-arrow"></i></div>
+                    <h5 class="fw-bold mt-3 mb-1">Revenue Report</h5>
+                    <p class="text-muted small mb-0">Income breakdown by source.</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a asp-action="PaymentReport" class="text-decoration-none">
+            <div class="card border-0 shadow-sm rounded-4 h-100 report-card">
+                <div class="card-body p-4">
+                    <div class="report-icon bg-purple"><i class="bi bi-cash-coin"></i></div>
+                    <h5 class="fw-bold mt-3 mb-1">Payment Report</h5>
+                    <p class="text-muted small mb-0">All payments received.</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a asp-action="InventoryReport" class="text-decoration-none">
+            <div class="card border-0 shadow-sm rounded-4 h-100 report-card">
+                <div class="card-body p-4">
+                    <div class="report-icon bg-teal"><i class="bi bi-box-seam-fill"></i></div>
+                    <h5 class="fw-bold mt-3 mb-1">Inventory Report</h5>
+                    <p class="text-muted small mb-0">Full stock status and low-stock items.</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a asp-action="AdmissionReport" class="text-decoration-none">
+            <div class="card border-0 shadow-sm rounded-4 h-100 report-card">
+                <div class="card-body p-4">
+                    <div class="report-icon bg-blue"><i class="bi bi-clipboard2-check-fill"></i></div>
+                    <h5 class="fw-bold mt-3 mb-1">Admission Report</h5>
+                    <p class="text-muted small mb-0">Admissions and discharges by date range.</p>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<style>
+    .report-card {
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .report-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.1) !important;
+    }
+
+    .report-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        color: #fff;
+    }
+
+    .bg-teal { background: var(--brand-primary); }
+    .bg-blue { background: var(--brand-secondary); }
+    .bg-purple { background: #7c3aed; }
+    .bg-amber { background: #d97706; }
+</style>

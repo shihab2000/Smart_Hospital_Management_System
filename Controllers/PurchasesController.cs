@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -19,14 +20,14 @@ namespace SHMS.Controllers
             _context = context;
         }
 
-        // GET: Purchases
+        // GET: Purchases — public
         public async Task<IActionResult> Index()
         {
             var applicationDbContext = _context.Purchases.Include(p => p.Medicine).Include(p => p.Supplier);
             return View(await applicationDbContext.ToListAsync());
         }
 
-        // GET: Purchases/Details/5
+        // GET: Purchases/Details/5 — public
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -47,6 +48,7 @@ namespace SHMS.Controllers
         }
 
         // GET: Purchases/Create
+        [Authorize(Roles = "Super Admin,Hospital Admin,Pharmacist")]
         public IActionResult Create()
         {
             ViewData["MedicineId"] = new SelectList(_context.Medicines, "MedicineId", "MedicineName");
@@ -54,30 +56,58 @@ namespace SHMS.Controllers
             return View();
         }
 
+        // POST: Purchases/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin,Pharmacist")]
+        public async Task<IActionResult> Create([Bind("PurchaseId,SupplierId,PurchaseDate,MedicineId,Quantity,TotalAmount")] Purchase purchase)
+        {
+            if (ModelState.IsValid)
+            {
+                var medicine = await _context.Medicines.FindAsync(purchase.MedicineId);
+                if (medicine != null)
+                {
+                    medicine.Quantity += purchase.Quantity;
+                }
+
+                purchase.PurchaseDate = DateTime.SpecifyKind(purchase.PurchaseDate.Date, DateTimeKind.Utc);
+
+                _context.Add(purchase);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            ViewBag.SupplierId = new SelectList(_context.Suppliers, "SupplierId", "SupplierName", purchase.SupplierId);
+            ViewBag.MedicineId = new SelectList(_context.Medicines, "MedicineId", "MedicineName", purchase.MedicineId);
+            return View(purchase);
+        }
+
         // POST: Purchases/QuickAddSupplier — AJAX endpoint for the quick-add modal
-[HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> QuickAddSupplier(string supplierName, string? phone, string? email, string? address)
-{
-    if (string.IsNullOrWhiteSpace(supplierName))
-    {
-        return BadRequest(new { message = "Supplier name is required." });
-    }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin,Pharmacist")]
+        public async Task<IActionResult> QuickAddSupplier(string supplierName, string? phone, string? email, string? address)
+        {
+            if (string.IsNullOrWhiteSpace(supplierName))
+            {
+                return BadRequest(new { message = "Supplier name is required." });
+            }
 
-    var supplier = new Supplier
-    {
-        SupplierName = supplierName,
-        Phone = phone,
-        Email = email,
-        Address = address
-    };
+            var supplier = new Supplier
+            {
+                SupplierName = supplierName,
+                Phone = phone,
+                Email = email,
+                Address = address
+            };
 
-    _context.Suppliers.Add(supplier);
-    await _context.SaveChangesAsync();
+            _context.Suppliers.Add(supplier);
+            await _context.SaveChangesAsync();
 
-    return Json(new { supplierId = supplier.SupplierId, supplierName = supplier.SupplierName });
-}
+            return Json(new { supplierId = supplier.SupplierId, supplierName = supplier.SupplierName });
+        }
+
         // GET: Purchases/Edit/5
+        [Authorize(Roles = "Super Admin,Hospital Admin,Pharmacist")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -98,6 +128,7 @@ public async Task<IActionResult> QuickAddSupplier(string supplierName, string? p
         // POST: Purchases/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin,Pharmacist")]
         public async Task<IActionResult> Edit(int id, [Bind("PurchaseId,SupplierId,PurchaseDate,MedicineId,Quantity,TotalAmount")] Purchase purchase)
         {
             if (id != purchase.PurchaseId)
@@ -131,6 +162,7 @@ public async Task<IActionResult> QuickAddSupplier(string supplierName, string? p
         }
 
         // GET: Purchases/Delete/5
+        [Authorize(Roles = "Super Admin,Hospital Admin,Pharmacist")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -153,6 +185,7 @@ public async Task<IActionResult> QuickAddSupplier(string supplierName, string? p
         // POST: Purchases/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin,Pharmacist")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var purchase = await _context.Purchases.FindAsync(id);

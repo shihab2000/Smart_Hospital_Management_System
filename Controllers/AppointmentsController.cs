@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,7 @@ using SHMS.Models;
 
 namespace SHMS.Controllers
 {
+    [Authorize]
     public class AppointmentsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -26,6 +28,17 @@ namespace SHMS.Controllers
                 .Include(a => a.Patient)
                 .Include(a => a.Doctor)
                 .AsQueryable();
+
+            // Doctor role: only see their own appointments
+            if (User.IsInRole("Doctor") && !User.IsInRole("Super Admin") && !User.IsInRole("Hospital Admin"))
+            {
+                var myDoctorId = await GetLoggedInDoctorId();
+                if (myDoctorId == null)
+                {
+                    return View(new List<Appointment>());
+                }
+                appointments = appointments.Where(a => a.DoctorId == myDoctorId.Value);
+            }
 
             if (today)
             {
@@ -53,10 +66,16 @@ namespace SHMS.Controllers
 
             if (appointment == null) return NotFound();
 
+            if (!await CanAccessAppointment(appointment))
+            {
+                return Forbid();
+            }
+
             return View(appointment);
         }
 
         // GET: Appointments/Create
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public IActionResult Create()
         {
             ViewBag.PatientId = new SelectList(_context.Patients, "PatientId", "Name");
@@ -67,6 +86,7 @@ namespace SHMS.Controllers
         // POST: Appointments/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public async Task<IActionResult> Create([Bind("AppointmentId,PatientId,DoctorId,AppointmentDate,AppointmentTime,Reason,Status")] Appointment appointment)
         {
             appointment.AppointmentDate = DateTime.SpecifyKind(appointment.AppointmentDate.Date, DateTimeKind.Utc);
@@ -89,13 +109,19 @@ namespace SHMS.Controllers
             return View(appointment);
         }
 
-        // GET: Appointments/Edit/5
+        // GET: Appointments/Edit/5 — Admin/Receptionist for full edit, or the assigned Doctor (status only, enforced in view/POST)
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist,Doctor")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
 
             var appointment = await _context.Appointments.FindAsync(id);
             if (appointment == null) return NotFound();
+
+            if (!await CanAccessAppointment(appointment))
+            {
+                return Forbid();
+            }
 
             ViewBag.PatientId = new SelectList(_context.Patients, "PatientId", "Name", appointment.PatientId);
             ViewBag.DoctorId = new SelectList(_context.Doctors, "DoctorId", "Name", appointment.DoctorId);
@@ -105,9 +131,15 @@ namespace SHMS.Controllers
         // POST: Appointments/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist,Doctor")]
         public async Task<IActionResult> Edit(int id, [Bind("AppointmentId,PatientId,DoctorId,AppointmentDate,AppointmentTime,Reason,Status")] Appointment appointment)
         {
             if (id != appointment.AppointmentId) return NotFound();
+
+            if (!await CanAccessAppointment(appointment))
+            {
+                return Forbid();
+            }
 
             appointment.AppointmentDate = DateTime.SpecifyKind(appointment.AppointmentDate.Date, DateTimeKind.Utc);
 
@@ -138,6 +170,7 @@ namespace SHMS.Controllers
         }
 
         // GET: Appointments/Delete/5
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -155,6 +188,7 @@ namespace SHMS.Controllers
         // POST: Appointments/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var appointment = await _context.Appointments.FindAsync(id);
@@ -166,13 +200,19 @@ namespace SHMS.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // POST: Appointments/Cancel/5
+        // POST: Appointments/Cancel/5 — Admin/Receptionist any appointment, Doctor only their own
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist,Doctor")]
         public async Task<IActionResult> Cancel(int id)
         {
             var appointment = await _context.Appointments.FindAsync(id);
             if (appointment == null) return NotFound();
+
+            if (!await CanAccessAppointment(appointment))
+            {
+                return Forbid();
+            }
 
             appointment.Status = "Cancelled";
             await _context.SaveChangesAsync();
@@ -181,6 +221,7 @@ namespace SHMS.Controllers
         }
 
         // GET: Appointments/Reschedule/5
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public async Task<IActionResult> Reschedule(int? id)
         {
             if (id == null) return NotFound();
@@ -198,6 +239,7 @@ namespace SHMS.Controllers
         // POST: Appointments/Reschedule/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public async Task<IActionResult> Reschedule(int id, DateTime appointmentDate, TimeSpan appointmentTime)
         {
             var appointment = await _context.Appointments.FindAsync(id);
@@ -259,6 +301,37 @@ namespace SHMS.Controllers
             }
 
             return (true, string.Empty);
+        }
+
+        // Resolves the DoctorId linked to the currently logged-in User (via Doctor.UserId), if any.
+        private async Task<int?> GetLoggedInDoctorId()
+        {
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdClaim, out var userId))
+            {
+                return null;
+            }
+
+            var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.UserId == userId);
+            return doctor?.DoctorId;
+        }
+
+        // Admins/Receptionist can access any appointment.
+        // A Doctor-role user can only access appointments assigned to their own linked Doctor record.
+        private async Task<bool> CanAccessAppointment(Appointment appointment)
+        {
+            if (User.IsInRole("Super Admin") || User.IsInRole("Hospital Admin") || User.IsInRole("Receptionist"))
+            {
+                return true;
+            }
+
+            if (User.IsInRole("Doctor"))
+            {
+                var myDoctorId = await GetLoggedInDoctorId();
+                return myDoctorId.HasValue && myDoctorId.Value == appointment.DoctorId;
+            }
+
+            return false;
         }
 
         private bool AppointmentExists(int id)

@@ -25,6 +25,7 @@
                 <form asp-action="Edit">
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
                     <input type="hidden" asp-for="UserId" />
+                    <input type="hidden" asp-for="Password" />
 
                     <div class="row g-3">
                         <div class="col-md-6">
@@ -40,14 +41,6 @@
                                 <input asp-for="Email" class="form-control" placeholder="Email" />
                                 <label asp-for="Email"></label>
                                 <span asp-validation-for="Email" class="text-danger small"></span>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="form-floating">
-                                <input asp-for="Password" type="password" class="form-control" placeholder="Password" />
-                                <label asp-for="Password"></label>
-                                <span asp-validation-for="Password" class="text-danger small"></span>
                             </div>
                         </div>
 
@@ -71,10 +64,19 @@
 
                         <div class="col-md-6">
                             <div class="form-floating">
-                                <input asp-for="Status" class="form-control" placeholder="Status" />
+                                <select asp-for="Status" class="form-select">
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                </select>
                                 <label asp-for="Status"></label>
                                 <span asp-validation-for="Status" class="text-danger small"></span>
                             </div>
+                        </div>
+
+                        <div class="col-md-6 d-flex align-items-center">
+                            <a asp-controller="Account" asp-action="ForgotPassword" class="btn btn-outline-secondary btn-sm w-100">
+                                <i class="bi bi-key me-1"></i> Reset This User's Password
+                            </a>
                         </div>
                     </div>
 
@@ -108,4 +110,12 @@
     .btn-primary:hover,
     .btn-primary:focus {
         opacity: .92;
-        background: linear-gradient(90deg, var(--brand-secondary),
+        background: linear-gradient(90deg, var(--brand-secondary), var(--brand-primary));
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--brand-primary);
+        box-shadow: 0 0 0 .2rem rgba(13, 148, 136, .15);
+    }
+</style>

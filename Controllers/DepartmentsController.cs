@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -19,13 +20,13 @@ namespace SHMS.Controllers
             _context = context;
         }
 
-        // GET: Departments
+        // GET: Departments — public
         public async Task<IActionResult> Index()
         {
             return View(await _context.Departments.ToListAsync());
         }
 
-        // GET: Departments/Details/5
+        // GET: Departments/Details/5 — public
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -44,16 +45,16 @@ namespace SHMS.Controllers
         }
 
         // GET: Departments/Create
+        [Authorize(Roles = "Super Admin,Hospital Admin")]
         public IActionResult Create()
         {
             return View();
         }
 
         // POST: Departments/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin")]
         public async Task<IActionResult> Create([Bind("DepartmentId,Name")] Department department)
         {
             if (ModelState.IsValid)
@@ -66,6 +67,7 @@ namespace SHMS.Controllers
         }
 
         // GET: Departments/Edit/5
+        [Authorize(Roles = "Super Admin,Hospital Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -82,10 +84,9 @@ namespace SHMS.Controllers
         }
 
         // POST: Departments/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin")]
         public async Task<IActionResult> Edit(int id, [Bind("DepartmentId,Name")] Department department)
         {
             if (id != department.DepartmentId)
@@ -117,6 +118,7 @@ namespace SHMS.Controllers
         }
 
         // GET: Departments/Delete/5
+        [Authorize(Roles = "Super Admin,Hospital Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -137,6 +139,7 @@ namespace SHMS.Controllers
         // POST: Departments/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var department = await _context.Departments.FindAsync(id);

@@ -111,7 +111,6 @@
 /Users/shihab/Documents/ASP/SHMS/obj/Debug/net10.0/scopedcss/Views/Shared/_Layout.cshtml.rz.scp.css
 /Users/shihab/Documents/ASP/SHMS/obj/Debug/net10.0/scopedcss/bundle/SHMS.styles.css
 /Users/shihab/Documents/ASP/SHMS/obj/Debug/net10.0/scopedcss/projectbundle/SHMS.bundle.scp.css
-/Users/shihab/Documents/ASP/SHMS/obj/Debug/net10.0/compressed/23jvjwvsri-{0}-b9sayid5wm-b9sayid5wm.gz
 /Users/shihab/Documents/ASP/SHMS/obj/Debug/net10.0/compressed/6igoc1beyf-{0}-61n19gt1b8-61n19gt1b8.gz
 /Users/shihab/Documents/ASP/SHMS/obj/Debug/net10.0/compressed/v7crs4amw3-{0}-xtxxf3hu2r-xtxxf3hu2r.gz
 /Users/shihab/Documents/ASP/SHMS/obj/Debug/net10.0/compressed/nlvybfsq9c-{0}-bqjiyaj88i-bqjiyaj88i.gz
@@ -173,8 +172,6 @@
 /Users/shihab/Documents/ASP/SHMS/obj/Debug/net10.0/compressed/qfxk2gz99v-{0}-muycvpuwrr-muycvpuwrr.gz
 /Users/shihab/Documents/ASP/SHMS/obj/Debug/net10.0/compressed/w699yemsao-{0}-87fc7y1x7t-87fc7y1x7t.gz
 /Users/shihab/Documents/ASP/SHMS/obj/Debug/net10.0/compressed/c5a43st4ir-{0}-mlv21k5csn-mlv21k5csn.gz
-/Users/shihab/Documents/ASP/SHMS/obj/Debug/net10.0/compressed/rcilrux8sg-{0}-oxbk0hi3ej-oxbk0hi3ej.gz
-/Users/shihab/Documents/ASP/SHMS/obj/Debug/net10.0/compressed/v8ovqv25vl-{0}-oxbk0hi3ej-oxbk0hi3ej.gz
 /Users/shihab/Documents/ASP/SHMS/obj/Debug/net10.0/staticwebassets.build.json
 /Users/shihab/Documents/ASP/SHMS/obj/Debug/net10.0/staticwebassets.build.json.cache
 /Users/shihab/Documents/ASP/SHMS/obj/Debug/net10.0/staticwebassets.development.json
@@ -346,3 +343,6 @@
 /Users/shihab/Documents/ASP/SHMS/bin/Debug/net10.0/runtimes/win-x64/native/msalruntime.dll
 /Users/shihab/Documents/ASP/SHMS/bin/Debug/net10.0/runtimes/win-x86/native/msalruntime_x86.dll
 /Users/shihab/Documents/ASP/SHMS/obj/Debug/net10.0/SHMS.sourcelink.json
+/Users/shihab/Documents/ASP/SHMS/obj/Debug/net10.0/compressed/rcilrux8sg-{0}-5qeyjc5gqj-5qeyjc5gqj.gz
+/Users/shihab/Documents/ASP/SHMS/obj/Debug/net10.0/compressed/v8ovqv25vl-{0}-5qeyjc5gqj-5qeyjc5gqj.gz
+/Users/shihab/Documents/ASP/SHMS/obj/Debug/net10.0/compressed/23jvjwvsri-{0}-b9sayid5wm-b9sayid5wm.gz

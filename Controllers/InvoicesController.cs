@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ using SHMS.Models;
 
 namespace SHMS.Controllers
 {
+    [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist,Accountant")]
     public class InvoicesController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -44,7 +46,8 @@ namespace SHMS.Controllers
             return View(invoice);
         }
 
-        // GET: Invoices/Create
+        // GET: Invoices/Create — Receptionist/Admin generate invoices (not Accountant)
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public IActionResult Create()
         {
             ViewBag.PatientId = new SelectList(_context.Patients, "PatientId", "Name");
@@ -53,6 +56,7 @@ namespace SHMS.Controllers
 
         // GET: Invoices/GetPatientCharges?patientId=5  (AJAX helper for auto-calculation)
         [HttpGet]
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public async Task<IActionResult> GetPatientCharges(int patientId)
         {
             var medicineCharge = await _context.Sales
@@ -69,6 +73,7 @@ namespace SHMS.Controllers
         // POST: Invoices/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public async Task<IActionResult> Create([Bind("InvoiceId,PatientId,InvoiceDate,ConsultationFee,MedicineCharge,LabCharge")] Invoice invoice)
         {
             invoice.TotalAmount = invoice.ConsultationFee + invoice.MedicineCharge + invoice.LabCharge;
@@ -86,7 +91,8 @@ namespace SHMS.Controllers
             return View(invoice);
         }
 
-        // GET: Invoices/Delete/5
+        // GET: Invoices/Delete/5 — Admins only
+        [Authorize(Roles = "Super Admin,Hospital Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -103,6 +109,7 @@ namespace SHMS.Controllers
         // POST: Invoices/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var invoice = await _context.Invoices.FindAsync(id);

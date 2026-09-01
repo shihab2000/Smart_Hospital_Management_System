@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -10,13 +12,16 @@ using SHMS.Models;
 
 namespace SHMS.Controllers
 {
+    [Authorize(Roles = "Super Admin")]
     public class UsersController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IPasswordHasher<User> _passwordHasher;
 
-        public UsersController(ApplicationDbContext context)
+        public UsersController(ApplicationDbContext context, IPasswordHasher<User> passwordHasher)
         {
             _context = context;
+            _passwordHasher = passwordHasher;
         }
 
         // GET: Users
@@ -53,14 +58,13 @@ namespace SHMS.Controllers
         }
 
         // POST: Users/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("UserId,Name,Email,Password,RoleId,Phone,Status")] User user)
         {
             if (ModelState.IsValid)
             {
+                user.Password = _passwordHasher.HashPassword(user, user.Password);
                 _context.Add(user);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -87,8 +91,6 @@ namespace SHMS.Controllers
         }
 
         // POST: Users/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("UserId,Name,Email,Password,RoleId,Phone,Status")] User user)
@@ -102,6 +104,18 @@ namespace SHMS.Controllers
             {
                 try
                 {
+                    // Only re-hash if the password field was actually changed
+                    // (i.e. it's not already a hash — hashes are long base64 strings).
+                    var existing = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == id);
+                    if (existing != null && existing.Password != user.Password)
+                    {
+                        user.Password = _passwordHasher.HashPassword(user, user.Password);
+                    }
+                    else if (existing != null)
+                    {
+                        user.Password = existing.Password;
+                    }
+
                     _context.Update(user);
                     await _context.SaveChangesAsync();
                 }

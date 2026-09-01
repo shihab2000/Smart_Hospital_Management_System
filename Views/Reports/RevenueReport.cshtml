@@ -1,0 +1,89 @@
+@{
+    ViewData["Title"] = "Revenue Report";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 no-print">
+    <div>
+        <h1 class="h3 fw-bold mb-1">Revenue Report</h1>
+        <p class="text-muted small mb-0">Income breakdown by source in the selected range.</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> All Reports
+    </a>
+</div>
+
+<div class="no-print">
+    @await Html.PartialAsync("_DateFilter", null, new ViewDataDictionary(ViewData) { ["ActionName"] = "RevenueReport" })
+</div>
+
+<div class="alert alert-light border mb-3 print-header">
+    <strong>SHMS — Revenue Report</strong> · Generated @DateTime.Now.ToString("dd MMM yyyy, hh:mm tt")
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-6">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body text-center p-3">
+                <div class="fs-5 fw-bold text-primary">৳@(((decimal)ViewBag.ConsultationRevenue).ToString("0.00"))</div>
+                <div class="small text-muted">Consultation</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body text-center p-3">
+                <div class="fs-5 fw-bold text-success">৳@(((decimal)ViewBag.MedicineRevenue).ToString("0.00"))</div>
+                <div class="small text-muted">Medicine</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body text-center p-3">
+                <div class="fs-5 fw-bold text-warning">৳@(((decimal)ViewBag.LabRevenue).ToString("0.00"))</div>
+                <div class="small text-muted">Laboratory</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body text-center p-3">
+                <div class="fs-5 fw-bold text-danger">৳@(((decimal)ViewBag.TotalCollected).ToString("0.00"))</div>
+                <div class="small text-muted">Actually Collected</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="fw-semibold text-muted">Total Billed (Consultation + Medicine + Lab)</span>
+            <span class="fs-4 fw-bold">৳@(((decimal)ViewBag.TotalBilled).ToString("0.00"))</span>
+        </div>
+        <hr />
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="fw-semibold text-muted">Total Collected (via Payments)</span>
+            <span class="fs-4 fw-bold text-success">৳@(((decimal)ViewBag.TotalCollected).ToString("0.00"))</span>
+        </div>
+        @{
+            decimal outstanding = (decimal)ViewBag.TotalBilled - (decimal)ViewBag.TotalCollected;
+        }
+        @if (outstanding > 0)
+        {
+            <hr />
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-semibold text-muted">Outstanding</span>
+                <span class="fs-5 fw-bold text-danger">৳@outstanding.ToString("0.00")</span>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    @@media print {
+        .no-print { display: none !important; }
+        .print-header { display: block !important; }
+    }
+    .print-header { display: none; }
+</style>

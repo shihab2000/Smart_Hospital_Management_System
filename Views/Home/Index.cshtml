@@ -1,6 +1,148 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
 }
+
+<!-- Hero Section -->
+<div class="hero-shms text-center mb-5">
+    <i class="bi bi-heart-pulse"></i>
+    <h1>Smart Hospital Management System</h1>
+    <p class="lead">Providing compassionate, modern healthcare with a full range of medical services under one roof — from consultation to diagnosis, treatment, and recovery.</p>
+    <div class="d-flex justify-content-center gap-2 flex-wrap">
+        <a asp-controller="Appointments" asp-action="Create" class="btn btn-hero">
+            <i class="bi bi-calendar-plus me-1"></i> Book an Appointment
+        </a>
+        <a href="#services" class="btn btn-hero-outline">
+            <i class="bi bi-info-circle me-1"></i> Our Services
+        </a>
+    </div>
+</div>
+
+<!-- Quick Stats Strip -->
+<div class="row g-3 mb-5">
+    <div class="col-md-4">
+        <div class="stat-strip">
+            <div class="stat-num">@ViewBag.TotalDoctors+</div>
+            <div class="stat-label">Expert Doctors</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-strip">
+            <div class="stat-num">@ViewBag.TotalDepartments+</div>
+            <div class="stat-label">Specialized Departments</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-strip">
+            <div class="stat-num">@ViewBag.TotalPatients+</div>
+            <div class="stat-label">Patients Served</div>
+        </div>
+    </div>
+</div>
+
+<!-- Services Section -->
+<div id="services" class="mb-5">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold h3">Our Services</h2>
+        <p class="text-muted">Comprehensive healthcare services designed around your needs.</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="service-card">
+                <div class="service-icon bg-teal"><i class="bi bi-calendar-check-fill"></i></div>
+                <h5 class="fw-bold mt-3 mb-1">Appointments</h5>
+                <p class="text-muted small mb-0">Book consultations with our specialist doctors at your convenience.</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="service-card">
+                <div class="service-icon bg-blue"><i class="bi bi-file-medical-fill"></i></div>
+                <h5 class="fw-bold mt-3 mb-1">Diagnosis & Treatment</h5>
+                <p class="text-muted small mb-0">Accurate diagnosis and personalized treatment plans from experienced physicians.</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="service-card">
+                <div class="service-icon bg-purple"><i class="bi bi-clipboard-pulse-fill"></i></div>
+                <h5 class="fw-bold mt-3 mb-1">Laboratory Services</h5>
+                <p class="text-muted small mb-0">Fast and reliable diagnostic testing with detailed reports.</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="service-card">
+                <div class="service-icon bg-amber"><i class="bi bi-capsule"></i></div>
+                <h5 class="fw-bold mt-3 mb-1">Pharmacy</h5>
+                <p class="text-muted small mb-0">In-house pharmacy stocked with essential medicines and supplies.</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="service-card">
+                <div class="service-icon bg-teal"><i class="bi bi-hospital-fill"></i></div>
+                <h5 class="fw-bold mt-3 mb-1">Inpatient Admission</h5>
+                <p class="text-muted small mb-0">Comfortable wards and dedicated care for admitted patients.</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="service-card">
+                <div class="service-icon bg-blue"><i class="bi bi-receipt"></i></div>
+                <h5 class="fw-bold mt-3 mb-1">Billing & Insurance</h5>
+                <p class="text-muted small mb-0">Transparent billing with clear invoices for every visit.</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="service-card">
+                <div class="service-icon bg-purple"><i class="bi bi-people-fill"></i></div>
+                <h5 class="fw-bold mt-3 mb-1">Specialist Care</h5>
+                <p class="text-muted small mb-0">Cardiology, Neurology, Pediatrics, Orthopedics, and more.</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="service-card">
+                <div class="service-icon bg-amber"><i class="bi bi-headset"></i></div>
+                <h5 class="fw-bold mt-3 mb-1">24/7 Support</h5>
+                <p class="text-muted small mb-0">Round-the-clock reception and emergency assistance.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Why Choose Us -->
+<div class="why-us-section mb-5">
+    <div class="row align-items-center g-4">
+        <div class="col-lg-6">
+            <h2 class="fw-bold h3 mb-3">Why Choose SHMS?</h2>
+            <div class="d-flex gap-3 mb-3">
+                <div class="why-icon"><i class="bi bi-check-circle-fill"></i></div>
+                <div>
+                    <h6 class="fw-bold mb-1">Experienced Medical Team</h6>
+                    <p class="text-muted small mb-0">Our doctors bring years of specialized expertise across every department.</p>
+                </div>
+            </div>
+            <div class="d-flex gap-3 mb-3">
+                <div class="why-icon"><i class="bi bi-check-circle-fill"></i></div>
+                <div>
+                    <h6 class="fw-bold mb-1">Modern Facilities</h6>
+                    <p class="text-muted small mb-0">Well-equipped labs, wards, and diagnostic tools for accurate care.</p>
+                </div>
+            </div>
+            <div class="d-flex gap-3">
+                <div class="why-icon"><i class="bi bi-check-circle-fill"></i></div>
+                <div>
+                    <h6 class="fw-bold mb-1">Patient-Centered Approach</h6>
+                    <p class="text-muted small mb-0">Every process — from booking to billing — is built around patient convenience.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="contact-card">
+                <h5 class="fw-bold mb-3"><i class="bi bi-geo-alt-fill me-2"></i>Visit Us</h5>
+                <p class="mb-2"><i class="bi bi-telephone-fill me-2 text-muted"></i>+880 1XXX-XXXXXX</p>
+                <p class="mb-2"><i class="bi bi-envelope-fill me-2 text-muted"></i>info@shms.com</p>
+                <p class="mb-0"><i class="bi bi-clock-fill me-2 text-muted"></i>Open 24 hours, 7 days a week</p>
+            </div>
+        </div>
+    </div>
+</div>
 
 <style>
     .hero-shms {
@@ -10,7 +152,6 @@
         color: #fff;
         position: relative;
         overflow: hidden;
-        margin-bottom: 2.5rem;
     }
 
     .hero-shms::after {
@@ -38,11 +179,11 @@
 
     .hero-shms p.lead {
         color: rgba(255, 255, 255, 0.9);
-        max-width: 620px;
+        max-width: 640px;
         margin: 0 auto 1.5rem;
     }
 
-    .hero-shms .btn-hero {
+    .btn-hero {
         background: #fff;
         color: var(--brand-secondary);
         font-weight: 600;
@@ -52,13 +193,48 @@
         transition: transform .2s ease;
     }
 
-    .hero-shms .btn-hero:hover {
+    .btn-hero:hover {
         transform: translateY(-2px);
         color: var(--brand-secondary);
     }
 
-    /* Feature cards */
-    .feature-card {
+    .btn-hero-outline {
+        background: transparent;
+        color: #fff;
+        font-weight: 600;
+        border-radius: 10px;
+        padding: .6rem 1.6rem;
+        border: 1.5px solid rgba(255,255,255,0.6);
+        transition: all .2s ease;
+    }
+
+    .btn-hero-outline:hover {
+        background: rgba(255,255,255,0.15);
+        color: #fff;
+    }
+
+    .stat-strip {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .stat-num {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--brand-primary);
+    }
+
+    .stat-label {
+        color: #64748b;
+        font-size: .9rem;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
+
+    .service-card {
         background: #fff;
         border-radius: 14px;
         padding: 1.75rem 1.5rem;
@@ -68,12 +244,12 @@
         transition: transform .2s ease, box-shadow .2s ease;
     }
 
-    .feature-card:hover {
+    .service-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 10px 28px rgba(15, 23, 42, 0.1);
     }
 
-    .feature-icon {
+    .service-icon {
         width: 52px;
         height: 52px;
         border-radius: 12px;
@@ -82,7 +258,6 @@
         justify-content: center;
         font-size: 1.5rem;
         color: #fff;
-        margin-bottom: 1rem;
     }
 
     .bg-teal { background: var(--brand-primary); }
@@ -90,62 +265,29 @@
     .bg-purple { background: #7c3aed; }
     .bg-amber { background: #d97706; }
 
-    .feature-card h5 {
-        font-weight: 600;
-        margin-bottom: .4rem;
+    .why-us-section {
+        background: #f8fafc;
+        border-radius: 18px;
+        padding: 2.5rem;
     }
 
-    .feature-card p {
-        color: #64748b;
-        font-size: .92rem;
-        margin-bottom: 0;
+    .why-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: rgba(13, 148, 136, 0.1);
+        color: var(--brand-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 1.1rem;
+    }
+
+    .contact-card {
+        background: #fff;
+        border-radius: 14px;
+        padding: 2rem;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
     }
 </style>
-
-<div class="hero-shms text-center">
-    <i class="bi bi-heart-pulse"></i>
-    <h1>Smart Hospital Management System</h1>
-    <p class="lead">Manage patients, doctors, staff, and every hospital operation from one place — fast, secure, and simple.</p>
-    <a asp-controller="Users" asp-action="Index" class="btn btn-hero">
-        <i class="bi bi-speedometer2 me-1"></i> Get Started
-    </a>
-</div>
-
-<div class="row g-4">
-    <div class="col-md-6 col-lg-3">
-        <div class="feature-card">
-            <div class="feature-icon bg-teal">
-                <i class="bi bi-people-fill"></i>
-            </div>
-            <h5>User Management</h5>
-            <p>Create, edit, and control every user account from one place.</p>
-        </div>
-    </div>
-    <div class="col-md-6 col-lg-3">
-        <div class="feature-card">
-            <div class="feature-icon bg-blue">
-                <i class="bi bi-shield-lock-fill"></i>
-            </div>
-            <h5>Role & Access</h5>
-            <p>Set permissions by role — Admin, Doctor, Receptionist, and more.</p>
-        </div>
-    </div>
-    <div class="col-md-6 col-lg-3">
-        <div class="feature-card">
-            <div class="feature-icon bg-purple">
-                <i class="bi bi-person-badge-fill"></i>
-            </div>
-            <h5>Doctors & Staff</h5>
-            <p>Manage information for doctors, lab technicians, and pharmacists.</p>
-        </div>
-    </div>
-    <div class="col-md-6 col-lg-3">
-        <div class="feature-card">
-            <div class="feature-icon bg-amber">
-                <i class="bi bi-clipboard2-pulse-fill"></i>
-            </div>
-            <h5>Patient Records</h5>
-            <p>Securely store and view patient details and treatment history.</p>
-        </div>
-    </div>
-</div>

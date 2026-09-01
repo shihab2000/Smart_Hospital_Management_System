@@ -1,48 +1,106 @@
-﻿/* Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-for details on configuring this project to bundle and minify static web assets. */
+﻿/* ===== Login / User Menu ===== */
 
-a.navbar-brand {
-  white-space: normal;
-  text-align: center;
-  word-break: break-all;
+.navbar-shms .user-menu,
+.navbar-shms .login-link {
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
 }
 
-a {
-  color: #0077cc;
+.navbar-shms .login-link {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
 }
 
-.btn-primary {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
+
+/* ===== Desktop / Laptop ===== */
+
+@media (min-width: 992px) {
+
+    .navbar-shms .navbar-collapse {
+        display: flex !important;
+        align-items: center;
+    }
+
+    .navbar-shms .navbar-nav {
+        align-items: center;
+    }
+
+    .navbar-shms .navbar-nav.me-auto {
+        margin-right: 10px !important;
+    }
+
+    .navbar-shms .navbar-nav.ms-auto {
+        margin-left: auto !important;
+        flex-shrink: 0;
+    }
+
+    .navbar-shms .nav-link {
+        font-size: 0.80rem;
+        padding-left: 0.45rem !important;
+        padding-right: 0.45rem !important;
+    }
 }
 
-.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
+
+/* ===== Smaller Laptop ===== */
+
+@media (min-width: 992px) and (max-width: 1200px) {
+
+    .navbar-shms .nav-link {
+        font-size: 0.72rem;
+        padding-left: 0.3rem !important;
+        padding-right: 0.3rem !important;
+    }
+
+    .navbar-shms .navbar-brand {
+        font-size: 1.05rem;
+    }
+
+    .navbar-shms .navbar-brand i {
+        font-size: 1.2rem;
+    }
 }
 
-.border-top {
-  border-top: 1px solid #e5e5e5;
-}
-.border-bottom {
-  border-bottom: 1px solid #e5e5e5;
+
+/* ===== Tablet / Mobile ===== */
+
+@media (max-width: 991.98px) {
+
+    .navbar-shms .navbar-collapse {
+        padding-top: 12px;
+    }
+
+    .navbar-shms .navbar-nav {
+        width: 100%;
+    }
+
+    .navbar-shms .nav-item {
+        width: 100%;
+    }
+
+    .navbar-shms .nav-link {
+        width: 100%;
+        padding: 10px 12px !important;
+    }
+
+    .navbar-shms .navbar-nav.ms-auto {
+        margin-top: 8px;
+        border-top: 1px solid rgba(255,255,255,0.15);
+        padding-top: 8px;
+    }
+
+    .navbar-shms .dropdown-menu {
+        width: 100%;
+    }
 }
 
-.box-shadow {
-  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
-}
 
-button.accept-policy {
-  font-size: 1rem;
-  line-height: inherit;
-}
+/* ===== Prevent Horizontal Scroll ===== */
 
-.footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  white-space: nowrap;
-  line-height: 60px;
+html,
+body {
+    overflow-x: hidden;
 }

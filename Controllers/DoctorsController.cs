@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -19,14 +20,14 @@ namespace SHMS.Controllers
             _context = context;
         }
 
-        // GET: Doctors
+        // GET: Doctors — public
         public async Task<IActionResult> Index()
         {
             var applicationDbContext = _context.Doctors.Include(d => d.Department);
             return View(await applicationDbContext.ToListAsync());
         }
 
-        // GET: Doctors/Details/5
+        // GET: Doctors/Details/5 — public
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -47,6 +48,7 @@ namespace SHMS.Controllers
         }
 
         // GET: Doctors/Create
+        [Authorize(Roles = "Super Admin,Hospital Admin")]
         public IActionResult Create()
         {
             ViewData["DepartmentId"] = new SelectList(_context.Departments, "DepartmentId", "Name");
@@ -56,6 +58,7 @@ namespace SHMS.Controllers
         // POST: Doctors/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin")]
         public async Task<IActionResult> Create([Bind("DoctorId,Name,Email,Phone,DepartmentId,Specialization,Availability")] Doctor doctor)
         {
             if (ModelState.IsValid)
@@ -69,6 +72,7 @@ namespace SHMS.Controllers
         }
 
         // GET: Doctors/Edit/5
+        [Authorize(Roles = "Super Admin,Hospital Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -88,6 +92,7 @@ namespace SHMS.Controllers
         // POST: Doctors/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin")]
         public async Task<IActionResult> Edit(int id, [Bind("DoctorId,Name,Email,Phone,DepartmentId,Specialization,Availability")] Doctor doctor)
         {
             if (id != doctor.DoctorId)
@@ -120,6 +125,7 @@ namespace SHMS.Controllers
         }
 
         // GET: Doctors/Delete/5
+        [Authorize(Roles = "Super Admin,Hospital Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -141,6 +147,7 @@ namespace SHMS.Controllers
         // POST: Doctors/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var doctor = await _context.Doctors.FindAsync(id);
@@ -156,8 +163,14 @@ namespace SHMS.Controllers
         // POST: Doctors/AddSchedule
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin,Doctor")]
         public async Task<IActionResult> AddSchedule(int doctorId, string dayOfWeek, TimeSpan startTime, TimeSpan endTime)
         {
+            if (!await CanManageSchedule(doctorId))
+            {
+                return Forbid();
+            }
+
             var schedule = new DoctorSchedule
             {
                 DoctorId = doctorId,
@@ -175,8 +188,14 @@ namespace SHMS.Controllers
         // POST: Doctors/DeleteSchedule
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin,Doctor")]
         public async Task<IActionResult> DeleteSchedule(int scheduleId, int doctorId)
         {
+            if (!await CanManageSchedule(doctorId))
+            {
+                return Forbid();
+            }
+
             var schedule = await _context.DoctorSchedules.FindAsync(scheduleId);
             if (schedule != null)
             {
@@ -185,6 +204,28 @@ namespace SHMS.Controllers
             }
 
             return RedirectToAction(nameof(Details), new { id = doctorId });
+        }
+
+        // A Doctor-role user may only manage the schedule of the Doctor record linked to their own account.
+        // Admins can manage any doctor's schedule.
+        private async Task<bool> CanManageSchedule(int doctorId)
+        {
+            if (User.IsInRole("Super Admin") || User.IsInRole("Hospital Admin"))
+            {
+                return true;
+            }
+
+            if (User.IsInRole("Doctor"))
+            {
+                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (int.TryParse(userIdClaim, out var userId))
+                {
+                    var doctor = await _context.Doctors.FindAsync(doctorId);
+                    return doctor != null && doctor.UserId == userId;
+                }
+            }
+
+            return false;
         }
 
         private bool DoctorExists(int id)

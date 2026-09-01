@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ using SHMS.Models;
 
 namespace SHMS.Controllers
 {
+    [Authorize]
     public class AdmissionsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -18,7 +20,7 @@ namespace SHMS.Controllers
             _context = context;
         }
 
-        // GET: Admissions
+        // GET: Admissions — any logged-in user
         public async Task<IActionResult> Index(bool activeOnly = false)
         {
             var admissions = _context.Admissions
@@ -39,7 +41,7 @@ namespace SHMS.Controllers
                 .ToListAsync());
         }
 
-        // GET: Admissions/Details/5
+        // GET: Admissions/Details/5 — any logged-in user
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -56,6 +58,7 @@ namespace SHMS.Controllers
         }
 
         // GET: Admissions/Create
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public IActionResult Create()
         {
             ViewBag.PatientId = new SelectList(_context.Patients, "PatientId", "Name");
@@ -65,8 +68,9 @@ namespace SHMS.Controllers
             return View();
         }
 
-        // GET: Admissions/GetAvailableBeds?wardId=3  (AJAX helper — only show free beds in the chosen ward)
+        // GET: Admissions/GetAvailableBeds?wardId=3
         [HttpGet]
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public async Task<IActionResult> GetAvailableBeds(int wardId)
         {
             var beds = await _context.Beds
@@ -80,6 +84,7 @@ namespace SHMS.Controllers
         // POST: Admissions/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public async Task<IActionResult> Create([Bind("AdmissionId,PatientId,WardId,BedId,AdmissionDate,Status")] Admission admission)
         {
             var bed = await _context.Beds.FindAsync(admission.BedId);
@@ -116,6 +121,7 @@ namespace SHMS.Controllers
         // POST: Admissions/Discharge/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public async Task<IActionResult> Discharge(int id)
         {
             var admission = await _context.Admissions.FindAsync(id);
@@ -135,6 +141,7 @@ namespace SHMS.Controllers
         }
 
         // GET: Admissions/Delete/5
+        [Authorize(Roles = "Super Admin,Hospital Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -153,12 +160,12 @@ namespace SHMS.Controllers
         // POST: Admissions/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var admission = await _context.Admissions.FindAsync(id);
             if (admission != null)
             {
-                // Free the bed if this admission was still active
                 if (admission.Status == "Admitted")
                 {
                     var bed = await _context.Beds.FindAsync(admission.BedId);

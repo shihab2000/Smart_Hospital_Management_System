@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -19,8 +20,7 @@ namespace SHMS.Controllers
             _context = context;
         }
 
-        
-       // GET: Medicines
+        // GET: Medicines — public
         public async Task<IActionResult> Index(string filter)
         {
             var medicines = _context.Medicines.Include(m => m.Supplier).AsQueryable();
@@ -47,28 +47,32 @@ namespace SHMS.Controllers
         }
 
         // GET: Medicines/Create
+        [Authorize(Roles = "Super Admin,Hospital Admin,Pharmacist")]
         public IActionResult Create()
         {
+            ViewData["SupplierId"] = new SelectList(_context.Suppliers, "SupplierId", "SupplierName");
             return View();
         }
 
         // POST: Medicines/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("MedicineId,Name")] Medicine medicine)
+        [Authorize(Roles = "Super Admin,Hospital Admin,Pharmacist")]
+        public async Task<IActionResult> Create([Bind("MedicineId,MedicineName,SupplierId,Quantity,UnitPrice,ExpiryDate")] Medicine medicine)
         {
             if (ModelState.IsValid)
             {
+                medicine.ExpiryDate = DateTime.SpecifyKind(medicine.ExpiryDate.Date, DateTimeKind.Utc);
                 _context.Add(medicine);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["SupplierId"] = new SelectList(_context.Suppliers, "SupplierId", "SupplierName", medicine.SupplierId);
             return View(medicine);
         }
 
         // GET: Medicines/Edit/5
+        [Authorize(Roles = "Super Admin,Hospital Admin,Pharmacist")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -81,15 +85,15 @@ namespace SHMS.Controllers
             {
                 return NotFound();
             }
+            ViewData["SupplierId"] = new SelectList(_context.Suppliers, "SupplierId", "SupplierName", medicine.SupplierId);
             return View(medicine);
         }
 
         // POST: Medicines/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("MedicineId,Name")] Medicine medicine)
+        [Authorize(Roles = "Super Admin,Hospital Admin,Pharmacist")]
+        public async Task<IActionResult> Edit(int id, [Bind("MedicineId,MedicineName,SupplierId,Quantity,UnitPrice,ExpiryDate")] Medicine medicine)
         {
             if (id != medicine.MedicineId)
             {
@@ -100,6 +104,7 @@ namespace SHMS.Controllers
             {
                 try
                 {
+                    medicine.ExpiryDate = DateTime.SpecifyKind(medicine.ExpiryDate.Date, DateTimeKind.Utc);
                     _context.Update(medicine);
                     await _context.SaveChangesAsync();
                 }
@@ -116,10 +121,12 @@ namespace SHMS.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["SupplierId"] = new SelectList(_context.Suppliers, "SupplierId", "SupplierName", medicine.SupplierId);
             return View(medicine);
         }
 
         // GET: Medicines/Delete/5
+        [Authorize(Roles = "Super Admin,Hospital Admin,Pharmacist")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -128,6 +135,7 @@ namespace SHMS.Controllers
             }
 
             var medicine = await _context.Medicines
+                .Include(m => m.Supplier)
                 .FirstOrDefaultAsync(m => m.MedicineId == id);
             if (medicine == null)
             {
@@ -140,6 +148,7 @@ namespace SHMS.Controllers
         // POST: Medicines/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin,Pharmacist")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var medicine = await _context.Medicines.FindAsync(id);

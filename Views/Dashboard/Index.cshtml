@@ -1,0 +1,222 @@
+@model IEnumerable<SHMS.Models.Appointment>
+
+@{
+    ViewData["Title"] = "Dashboard";
+    var recentAppointments = ViewBag.RecentAppointments as List<SHMS.Models.Appointment>;
+    var recentPayments = ViewBag.RecentPayments as List<SHMS.Models.Payment>;
+}
+
+<div class="mb-4">
+    <h1 class="h3 fw-bold mb-1">Dashboard</h1>
+    <p class="text-muted small mb-0">Overview of today's hospital activity — @DateTime.Now.ToString("dd MMM yyyy")</p>
+</div>
+
+<!-- KPI Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-3">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="kpi-icon bg-teal"><i class="bi bi-calendar-check"></i></div>
+                    <span class="text-muted small">Today's Appointments</span>
+                </div>
+                <div class="fs-3 fw-bold">@ViewBag.TodaysAppointmentCount</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-md-4 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-3">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="kpi-icon bg-blue"><i class="bi bi-people"></i></div>
+                    <span class="text-muted small">Total Patients</span>
+                </div>
+                <div class="fs-3 fw-bold">@ViewBag.TotalPatients</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-md-4 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-3">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="kpi-icon bg-purple"><i class="bi bi-person-badge"></i></div>
+                    <span class="text-muted small">Total Doctors</span>
+                </div>
+                <div class="fs-3 fw-bold">@ViewBag.TotalDoctors</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-md-4 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-3">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="kpi-icon bg-amber"><i class="bi bi-cash-coin"></i></div>
+                    <span class="text-muted small">Today's Revenue</span>
+                </div>
+                <div class="fs-3 fw-bold">৳@(((decimal)ViewBag.TodaysRevenue).ToString("0.00"))</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-md-4 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-3">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="kpi-icon bg-teal"><i class="bi bi-hospital"></i></div>
+                    <span class="text-muted small">Admitted Patients</span>
+                </div>
+                <div class="fs-3 fw-bold">@ViewBag.TotalAdmitted</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-md-4 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-3">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="kpi-icon bg-blue"><i class="bi bi-file-earmark-ruled"></i></div>
+                    <span class="text-muted small">Available Beds</span>
+                </div>
+                <div class="fs-3 fw-bold">@ViewBag.AvailableBeds<span class="fs-6 text-muted"> / @ViewBag.TotalBeds</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-md-4 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-3">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="kpi-icon bg-purple"><i class="bi bi-capsule"></i></div>
+                    <span class="text-muted small">Medicine Stock</span>
+                </div>
+                @{
+                    int lowStock = ViewBag.LowStockMedicineCount;
+                }
+                <div class="fs-3 fw-bold">
+                    @ViewBag.TotalMedicines
+                    @if (lowStock > 0)
+                    {
+                        <span class="badge rounded-pill text-bg-warning ms-1 align-middle" style="font-size:.65rem;">
+                            @lowStock low
+                        </span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-md-4 col-lg-3">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-3 d-flex flex-column justify-content-center align-items-center text-center h-100">
+                <a asp-controller="Reports" asp-action="Index" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-bar-chart-fill me-1"></i> View Reports
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-calendar-check me-2"></i>Recent Appointments</h6>
+                    <a asp-controller="Appointments" asp-action="Index" class="small text-decoration-none">View all</a>
+                </div>
+                @if (recentAppointments != null && recentAppointments.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <tbody>
+                                @foreach (var appt in recentAppointments)
+                                {
+                                    var statusClass = appt.Status?.ToLower() switch
+                                    {
+                                        "confirmed" => "text-bg-success",
+                                        "completed" => "text-bg-primary",
+                                        "cancelled" => "text-bg-danger",
+                                        "pending" => "text-bg-warning",
+                                        _ => "text-bg-secondary"
+                                    };
+                                    <tr>
+                                        <td>
+                                            <div class="fw-semibold small">@(appt.Patient?.Name ?? "—")</div>
+                                            <div class="text-muted" style="font-size:.8rem;">with @(appt.Doctor?.Name ?? "—")</div>
+                                        </td>
+                                        <td class="text-muted small">@appt.AppointmentDate.ToString("dd MMM")</td>
+                                        <td class="text-end">
+                                            <span class="badge rounded-pill @statusClass" style="font-size:.7rem;">@appt.Status</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted small mb-0">No recent appointments.</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-cash-coin me-2"></i>Recent Payments</h6>
+                    <a asp-controller="Payments" asp-action="Index" class="small text-decoration-none">View all</a>
+                </div>
+                @if (recentPayments != null && recentPayments.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <tbody>
+                                @foreach (var payment in recentPayments)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="fw-semibold small">@(payment.Invoice?.Patient?.Name ?? "—")</div>
+                                            <div class="text-muted" style="font-size:.8rem;">@payment.PaymentMethod</div>
+                                        </td>
+                                        <td class="text-muted small">@payment.PaymentDate.ToString("dd MMM")</td>
+                                        <td class="text-end fw-semibold small">৳@payment.Amount.ToString("0.00")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted small mb-0">No recent payments.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .kpi-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .bg-teal { background: var(--brand-primary); }
+    .bg-blue { background: var(--brand-secondary); }
+    .bg-purple { background: #7c3aed; }
+    .bg-amber { background: #d97706; }
+</style>

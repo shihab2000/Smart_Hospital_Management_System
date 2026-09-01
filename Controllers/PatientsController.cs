@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,7 @@ using SHMS.Models;
 
 namespace SHMS.Controllers
 {
+    [Authorize]
     public class PatientsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -19,7 +21,7 @@ namespace SHMS.Controllers
             _context = context;
         }
 
-        // GET: Patients
+        // GET: Patients — any logged-in user
         public async Task<IActionResult> Index(string searchString)
         {
             var patients = from p in _context.Patients
@@ -40,7 +42,7 @@ namespace SHMS.Controllers
             return View(await patients.ToListAsync());
         }
 
-        // GET: Patients/Details/5
+        // GET: Patients/Details/5 — any logged-in user
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -76,6 +78,7 @@ namespace SHMS.Controllers
         }
 
         // GET: Patients/Create
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public IActionResult Create()
         {
             return View();
@@ -84,6 +87,7 @@ namespace SHMS.Controllers
         // POST: Patients/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public async Task<IActionResult> Create([Bind("PatientId,Name,DateOfBirth,Gender,Phone,Address,BloodGroup,EmergencyContact")] Patient patient)
         {
             if (ModelState.IsValid)
@@ -96,6 +100,7 @@ namespace SHMS.Controllers
         }
 
         // GET: Patients/Edit/5
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -114,6 +119,7 @@ namespace SHMS.Controllers
         // POST: Patients/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public async Task<IActionResult> Edit(int id, [Bind("PatientId,Name,DateOfBirth,Gender,Phone,Address,BloodGroup,EmergencyContact")] Patient patient)
         {
             if (id != patient.PatientId)
@@ -145,6 +151,7 @@ namespace SHMS.Controllers
         }
 
         // GET: Patients/Delete/5
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -165,6 +172,7 @@ namespace SHMS.Controllers
         // POST: Patients/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var patient = await _context.Patients.FindAsync(id);

@@ -1,0 +1,90 @@
+@model IEnumerable<SHMS.Models.LabTest>
+
+@{
+    ViewData["Title"] = "Laboratory Report";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 no-print">
+    <div>
+        <h1 class="h3 fw-bold mb-1">Laboratory Report</h1>
+        <p class="text-muted small mb-0">Lab tests conducted in the selected range.</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> All Reports
+    </a>
+</div>
+
+<div class="no-print">
+    @await Html.PartialAsync("_DateFilter", null, new ViewDataDictionary(ViewData) { ["ActionName"] = "LaboratoryReport" })
+</div>
+
+<div class="alert alert-light border mb-3 print-header">
+    <strong>SHMS — Laboratory Report</strong> · Generated @DateTime.Now.ToString("dd MMM yyyy, hh:mm tt")
+</div>
+
+<div class="row g-3 mb-3 no-print">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body text-center p-3">
+                <div class="fs-4 fw-bold text-primary">৳@(((decimal)ViewBag.TotalFees).ToString("0.00"))</div>
+                <div class="small text-muted">Total Test Fees</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-4">Patient</th>
+                    <th>Test Name</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Fee</th>
+                    <th class="pe-4">Report</th>
+                </tr>
+            </thead>
+            <tbody>
+@foreach (var item in Model) {
+                <tr>
+                    <td class="ps-4 fw-semibold">@(item.Patient?.Name ?? "—")</td>
+                    <td class="text-muted">@item.TestName</td>
+                    <td>@item.TestDate.ToString("dd MMM yyyy")</td>
+                    <td>
+                        <span class="badge rounded-pill text-bg-light border">@item.TestStatus</span>
+                    </td>
+                    <td>৳@item.TestFee.ToString("0.00")</td>
+                    <td class="pe-4">
+                        @if (item.LabReport != null)
+                        {
+                            <span class="badge rounded-pill text-bg-success">Ready</span>
+                        }
+                        else
+                        {
+                            <span class="badge rounded-pill text-bg-secondary">Pending</span>
+                        }
+                    </td>
+                </tr>
+}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center text-muted py-5">
+        <i class="bi bi-clipboard-pulse display-6 d-block mb-2"></i>
+        No lab tests in this date range.
+    </div>
+}
+
+<style>
+    @@media print {
+        .no-print { display: none !important; }
+        .print-header { display: block !important; }
+    }
+    .print-header { display: none; }
+</style>
