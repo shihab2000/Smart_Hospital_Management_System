@@ -59,8 +59,7 @@
                         </a>
                         @if (item.Status == "Admitted")
                         {
-                            <form asp-action="Discharge" asp-route-id="@item.AdmissionId" method="post" class="d-inline"
-                                  onsubmit="return confirm('Discharge this patient?');">
+                            <form asp-action="Discharge" asp-route-id="@item.AdmissionId" method="post" class="d-inline">
                                 <button type="submit" class="btn btn-sm btn-outline-success border-0" title="Discharge">
                                     <i class="bi bi-box-arrow-right"></i>
                                 </button>

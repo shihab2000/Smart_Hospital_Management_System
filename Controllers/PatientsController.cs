@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -15,13 +16,15 @@ namespace SHMS.Controllers
     public class PatientsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IPasswordHasher<User> _passwordHasher;
 
-        public PatientsController(ApplicationDbContext context)
+        public PatientsController(ApplicationDbContext context, IPasswordHasher<User> passwordHasher)
         {
             _context = context;
+            _passwordHasher = passwordHasher;
         }
 
-        // GET: Patients — any logged-in user
+        // GET: Patients
         public async Task<IActionResult> Index(string searchString)
         {
             var patients = from p in _context.Patients
@@ -42,7 +45,7 @@ namespace SHMS.Controllers
             return View(await patients.ToListAsync());
         }
 
-        // GET: Patients/Details/5 — any logged-in user
+        // GET: Patients/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -88,10 +91,49 @@ namespace SHMS.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
-        public async Task<IActionResult> Create([Bind("PatientId,Name,DateOfBirth,Gender,Phone,Address,BloodGroup,EmergencyContact")] Patient patient)
+        public async Task<IActionResult> Create(
+            [Bind("PatientId,Name,DateOfBirth,Gender,Phone,Address,BloodGroup,EmergencyContact")] Patient patient,
+            bool createLogin, string? loginEmail, string? loginPassword)
         {
+            if (createLogin)
+            {
+                if (string.IsNullOrWhiteSpace(loginEmail) || string.IsNullOrWhiteSpace(loginPassword))
+                {
+                    ModelState.AddModelError(string.Empty, "Email and password are required to create a login account.");
+                }
+                else if (await _context.Users.AnyAsync(u => u.Email == loginEmail))
+                {
+                    ModelState.AddModelError(string.Empty, "This email is already used by another account.");
+                }
+            }
+
             if (ModelState.IsValid)
             {
+                if (createLogin)
+                {
+                    var patientRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == "Patient");
+                    if (patientRole == null)
+                    {
+                        ModelState.AddModelError(string.Empty, "Patient role not configured in the system.");
+                        return View(patient);
+                    }
+
+                    var user = new User
+                    {
+                        Name = patient.Name,
+                        Email = loginEmail!,
+                        Phone = patient.Phone,
+                        RoleId = patientRole.RoleId,
+                        Status = "Active"
+                    };
+                    user.Password = _passwordHasher.HashPassword(user, loginPassword!);
+
+                    _context.Users.Add(user);
+                    await _context.SaveChangesAsync();
+
+                    patient.UserId = user.UserId;
+                }
+
                 _context.Add(patient);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -120,7 +162,7 @@ namespace SHMS.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
-        public async Task<IActionResult> Edit(int id, [Bind("PatientId,Name,DateOfBirth,Gender,Phone,Address,BloodGroup,EmergencyContact")] Patient patient)
+        public async Task<IActionResult> Edit(int id, [Bind("PatientId,Name,DateOfBirth,Gender,Phone,Address,BloodGroup,EmergencyContact,UserId")] Patient patient)
         {
             if (id != patient.PatientId)
             {

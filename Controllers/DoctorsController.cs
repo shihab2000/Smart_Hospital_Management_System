@@ -21,11 +21,22 @@ namespace SHMS.Controllers
         }
 
         // GET: Doctors — public
-        public async Task<IActionResult> Index()
-        {
-            var applicationDbContext = _context.Doctors.Include(d => d.Department);
-            return View(await applicationDbContext.ToListAsync());
-        }
+        public async Task<IActionResult> Index(string searchString)
+{
+    var doctors = _context.Doctors.Include(d => d.Department).AsQueryable();
+
+    if (!string.IsNullOrEmpty(searchString))
+    {
+        var search = searchString.ToLower();
+        doctors = doctors.Where(d =>
+            d.Name.ToLower().Contains(search) ||
+            (d.Specialization != null && d.Specialization.ToLower().Contains(search)) ||
+            (d.Department != null && d.Department.Name.ToLower().Contains(search)));
+    }
+
+    ViewData["CurrentFilter"] = searchString;
+    return View(await doctors.ToListAsync());
+}
 
         // GET: Doctors/Details/5 — public
         public async Task<IActionResult> Details(int? id)

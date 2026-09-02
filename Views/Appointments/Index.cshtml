@@ -75,8 +75,7 @@
                             <a asp-action="Reschedule" asp-route-id="@item.AppointmentId" class="btn btn-sm btn-outline-warning border-0" title="Reschedule">
                                 <i class="bi bi-calendar-event"></i>
                             </a>
-                            <form asp-action="Cancel" asp-route-id="@item.AppointmentId" method="post" class="d-inline"
-                                  onsubmit="return confirm('Cancel this appointment?');">
+                            <form asp-action="Cancel" asp-route-id="@item.AppointmentId" method="post" class="d-inline">
                                 <button type="submit" class="btn btn-sm btn-outline-danger border-0" title="Cancel">
                                     <i class="bi bi-x-circle"></i>
                                 </button>

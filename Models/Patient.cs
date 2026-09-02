@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SHMS.Models
 {
@@ -29,6 +30,13 @@ namespace SHMS.Models
         [Display(Name = "Emergency Contact")]
         [Phone]
         public string? EmergencyContact { get; set; }
+
+        // Links this patient record to a login account (User), so a logged-in
+        // patient can view their own records.
+        public int? UserId { get; set; }
+
+        [ForeignKey("UserId")]
+        public User? User { get; set; }
 
         public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
     }
