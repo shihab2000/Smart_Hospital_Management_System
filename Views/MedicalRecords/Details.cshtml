@@ -4,57 +4,91 @@
     ViewData["Title"] = "Details";
 }
 
-<h1>Details</h1>
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4 p-md-5">
 
-<div>
-    <h4>MedicalRecord</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Patient)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Patient.Gender)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Doctor)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Doctor.Email)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Symptoms)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Symptoms)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Diagnosis)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Diagnosis)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Treatment)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Treatment)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.MedicalNotes)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.MedicalNotes)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.RecordDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.RecordDate)
-        </dd>
-    </dl>
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="d-flex align-items-center justify-content-center rounded-3 text-white fs-4"
+                         style="width:64px;height:64px;background:linear-gradient(135deg, var(--brand-secondary), var(--brand-primary));">
+                        <i class="bi bi-file-medical"></i>
+                    </div>
+                    <div>
+                        <h1 class="h4 mb-0 fw-bold">@(Model?.Patient?.Name ?? "—")</h1>
+                        <p class="text-muted small mb-0">
+                            @(Model?.Doctor?.Name ?? "—") · @Model?.RecordDate.ToString("dd MMM yyyy")
+                        </p>
+                    </div>
+                </div>
+
+                <hr class="mb-4" />
+
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted fw-normal">
+                        <i class="bi bi-person me-2"></i>@Html.DisplayNameFor(model => model.Patient)
+                    </dt>
+                    <dd class="col-sm-8">@(Model?.Patient?.Name ?? "—")</dd>
+
+                    <dt class="col-sm-4 text-muted fw-normal">
+                        <i class="bi bi-person-badge me-2"></i>@Html.DisplayNameFor(model => model.Doctor)
+                    </dt>
+                    <dd class="col-sm-8">@(Model?.Doctor?.Name ?? "—")</dd>
+
+                    <dt class="col-sm-4 text-muted fw-normal">
+                        <i class="bi bi-clipboard2-pulse me-2"></i>@Html.DisplayNameFor(model => model.Symptoms)
+                    </dt>
+                    <dd class="col-sm-8">@Model?.Symptoms</dd>
+
+                    <dt class="col-sm-4 text-muted fw-normal">
+                        <i class="bi bi-clipboard2-check me-2"></i>@Html.DisplayNameFor(model => model.Diagnosis)
+                    </dt>
+                    <dd class="col-sm-8">@Model?.Diagnosis</dd>
+
+                    <dt class="col-sm-4 text-muted fw-normal">
+                        <i class="bi bi-heart-pulse me-2"></i>@Html.DisplayNameFor(model => model.Treatment)
+                    </dt>
+                    <dd class="col-sm-8">@Model?.Treatment</dd>
+
+                    @if (!string.IsNullOrEmpty(Model?.MedicalNotes))
+                    {
+                        <dt class="col-sm-4 text-muted fw-normal">
+                            <i class="bi bi-journal-text me-2"></i>@Html.DisplayNameFor(model => model.MedicalNotes)
+                        </dt>
+                        <dd class="col-sm-8">@Model.MedicalNotes</dd>
+                    }
+
+                    <dt class="col-sm-4 text-muted fw-normal">
+                        <i class="bi bi-calendar3 me-2"></i>@Html.DisplayNameFor(model => model.RecordDate)
+                    </dt>
+                    <dd class="col-sm-8">@Model?.RecordDate.ToString("dd MMM yyyy")</dd>
+                </dl>
+
+                <hr class="my-4" />
+
+                <div class="d-flex gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model?.MedicalRecordId" class="btn btn-primary flex-fill fw-semibold">
+                        <i class="bi bi-pencil me-1"></i> Edit
+                    </a>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.MedicalRecordId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
-</div>
+
+<style>
+    .btn-primary {
+        background: linear-gradient(90deg, var(--brand-secondary), var(--brand-primary));
+        border: none;
+    }
+
+    .btn-primary:hover,
+    .btn-primary:focus {
+        opacity: .92;
+        background: linear-gradient(90deg, var(--brand-secondary), var(--brand-primary));
+    }
+</style>

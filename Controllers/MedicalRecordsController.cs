@@ -76,23 +76,24 @@ namespace SHMS.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("MedicalRecordId,PatientId,DoctorId,Symptoms,Diagnosis,Treatment,MedicalNotes,RecordDate")] MedicalRecord medicalRecord)
-        {
-            if (!await CanAccessRecord(medicalRecord.DoctorId))
-            {
-                return Forbid();
-            }
+{
+    if (!await CanAccessRecord(medicalRecord.DoctorId))
+    {
+        return Forbid();
+    }
 
-            if (ModelState.IsValid)
-            {
-                _context.Add(medicalRecord);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["DoctorId"] = new SelectList(_context.Doctors, "DoctorId", "Name", medicalRecord.DoctorId);
-            ViewData["PatientId"] = new SelectList(_context.Patients, "PatientId", "Name", medicalRecord.PatientId);
-            return View(medicalRecord);
-        }
+    medicalRecord.RecordDate = DateTime.SpecifyKind(medicalRecord.RecordDate.Date, DateTimeKind.Utc);
 
+    if (ModelState.IsValid)
+    {
+        _context.Add(medicalRecord);
+        await _context.SaveChangesAsync();
+        return RedirectToAction(nameof(Index));
+    }
+    ViewData["DoctorId"] = new SelectList(_context.Doctors, "DoctorId", "Name", medicalRecord.DoctorId);
+    ViewData["PatientId"] = new SelectList(_context.Patients, "PatientId", "Name", medicalRecord.PatientId);
+    return View(medicalRecord);
+}
         // GET: MedicalRecords/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -121,19 +122,21 @@ namespace SHMS.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("MedicalRecordId,PatientId,DoctorId,Symptoms,Diagnosis,Treatment,MedicalNotes,RecordDate")] MedicalRecord medicalRecord)
-        {
-            if (id != medicalRecord.MedicalRecordId)
             {
-                return NotFound();
-            }
+                if (id != medicalRecord.MedicalRecordId)
+                {
+                    return NotFound();
+                }
 
-            if (!await CanAccessRecord(medicalRecord.DoctorId))
-            {
-                return Forbid();
-            }
+                if (!await CanAccessRecord(medicalRecord.DoctorId))
+                {
+                    return Forbid();
+                }
 
-            if (ModelState.IsValid)
-            {
+                medicalRecord.RecordDate = DateTime.SpecifyKind(medicalRecord.RecordDate.Date, DateTimeKind.Utc);
+
+                if (ModelState.IsValid)
+                {
                 try
                 {
                     _context.Update(medicalRecord);

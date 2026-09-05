@@ -76,14 +76,16 @@ namespace SHMS.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("PrescriptionId,PatientId,DoctorId,PrescriptionDate,Notes")] Prescription prescription)
-        {
-            if (!await CanAccessPrescription(prescription.DoctorId))
             {
-                return Forbid();
-            }
+                if (!await CanAccessPrescription(prescription.DoctorId))
+                {
+                    return Forbid();
+                }
 
-            if (ModelState.IsValid)
-            {
+                prescription.PrescriptionDate = DateTime.SpecifyKind(prescription.PrescriptionDate.Date, DateTimeKind.Utc);
+
+                if (ModelState.IsValid)
+                {
                 _context.Add(prescription);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -121,19 +123,21 @@ namespace SHMS.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("PrescriptionId,PatientId,DoctorId,PrescriptionDate,Notes")] Prescription prescription)
-        {
-            if (id != prescription.PrescriptionId)
             {
-                return NotFound();
-            }
+                if (id != prescription.PrescriptionId)
+                {
+                    return NotFound();
+                }
 
-            if (!await CanAccessPrescription(prescription.DoctorId))
-            {
-                return Forbid();
-            }
+                if (!await CanAccessPrescription(prescription.DoctorId))
+                {
+                    return Forbid();
+                }
 
-            if (ModelState.IsValid)
-            {
+                prescription.PrescriptionDate = DateTime.SpecifyKind(prescription.PrescriptionDate.Date, DateTimeKind.Utc);
+
+                if (ModelState.IsValid)
+                {
                 try
                 {
                     _context.Update(prescription);

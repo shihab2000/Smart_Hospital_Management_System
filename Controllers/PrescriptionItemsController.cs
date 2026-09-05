@@ -21,28 +21,26 @@ namespace SHMS.Controllers
             _context = context;
         }
 
-        // GET: PrescriptionItems — Doctor sees only items belonging to their own prescriptions
         public async Task<IActionResult> Index()
+{
+    var items = _context.PrescriptionItems
+        .Include(p => p.Medicine)
+        .Include(p => p.Prescription)
+            .ThenInclude(pr => pr!.Patient)
+        .AsQueryable();
+
+    if (User.IsInRole("Doctor") && !User.IsInRole("Super Admin") && !User.IsInRole("Hospital Admin"))
+    {
+        var myDoctorId = await GetLoggedInDoctorId();
+        if (myDoctorId == null)
         {
-            var items = _context.PrescriptionItems
-                .Include(p => p.Medicine)
-                .Include(p => p.Prescription)
-                    .ThenInclude(pr => pr!.Doctor)
-                .AsQueryable();
-
-            if (User.IsInRole("Doctor") && !User.IsInRole("Super Admin") && !User.IsInRole("Hospital Admin"))
-            {
-                var myDoctorId = await GetLoggedInDoctorId();
-                if (myDoctorId == null)
-                {
-                    return View(new List<PrescriptionItem>());
-                }
-                items = items.Where(i => i.Prescription != null && i.Prescription.DoctorId == myDoctorId.Value);
-            }
-
-            return View(await items.ToListAsync());
+            return View(new List<PrescriptionItem>());
         }
+        items = items.Where(i => i.Prescription != null && i.Prescription.DoctorId == myDoctorId.Value);
+    }
 
+    return View(await items.ToListAsync());
+}
         // GET: PrescriptionItems/Details/5
         public async Task<IActionResult> Details(int? id)
         {

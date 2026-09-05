@@ -45,6 +45,24 @@ namespace SHMS.Controllers
 
             return View(await medicines.OrderBy(m => m.MedicineName).ToListAsync());
         }
+        // GET: Medicines/Details/5
+public async Task<IActionResult> Details(int? id)
+{
+    if (id == null)
+    {
+        return NotFound();
+    }
+
+    var medicine = await _context.Medicines
+        .Include(m => m.Supplier)
+        .FirstOrDefaultAsync(m => m.MedicineId == id);
+    if (medicine == null)
+    {
+        return NotFound();
+    }
+
+    return View(medicine);
+}
 
         // GET: Medicines/Create
         [Authorize(Roles = "Super Admin,Hospital Admin,Pharmacist")]

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -14,29 +15,32 @@ namespace SHMS.Controllers
     public class DoctorsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IPasswordHasher<User> _passwordHasher;
 
-        public DoctorsController(ApplicationDbContext context)
+        public DoctorsController(ApplicationDbContext context, IPasswordHasher<User> passwordHasher)
         {
             _context = context;
+            _passwordHasher = passwordHasher;
         }
 
-        // GET: Doctors — public
+        // GET: Doctors — public, with search
         public async Task<IActionResult> Index(string searchString)
-{
-    var doctors = _context.Doctors.Include(d => d.Department).AsQueryable();
+        {
+            var doctors = _context.Doctors.Include(d => d.Department).AsQueryable();
 
-    if (!string.IsNullOrEmpty(searchString))
-    {
-        var search = searchString.ToLower();
-        doctors = doctors.Where(d =>
-            d.Name.ToLower().Contains(search) ||
-            (d.Specialization != null && d.Specialization.ToLower().Contains(search)) ||
-            (d.Department != null && d.Department.Name.ToLower().Contains(search)));
-    }
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                var search = searchString.ToLower();
+                doctors = doctors.Where(d =>
+                    d.Name.ToLower().Contains(search) ||
+                    (d.Specialization != null && d.Specialization.ToLower().Contains(search)) ||
+                    (d.Department != null && d.Department.Name.ToLower().Contains(search)));
+            }
 
-    ViewData["CurrentFilter"] = searchString;
-    return View(await doctors.ToListAsync());
-}
+            ViewData["CurrentFilter"] = searchString;
+
+            return View(await doctors.ToListAsync());
+        }
 
         // GET: Doctors/Details/5 — public
         public async Task<IActionResult> Details(int? id)
@@ -70,10 +74,50 @@ namespace SHMS.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Super Admin,Hospital Admin")]
-        public async Task<IActionResult> Create([Bind("DoctorId,Name,Email,Phone,DepartmentId,Specialization,Availability")] Doctor doctor)
+        public async Task<IActionResult> Create(
+            [Bind("DoctorId,Name,Email,Phone,DepartmentId,Specialization,Availability")] Doctor doctor,
+            bool createLogin, string? loginPassword)
         {
+            if (createLogin)
+            {
+                if (string.IsNullOrWhiteSpace(loginPassword))
+                {
+                    ModelState.AddModelError(string.Empty, "Password is required to create a login account.");
+                }
+                else if (await _context.Users.AnyAsync(u => u.Email == doctor.Email))
+                {
+                    ModelState.AddModelError(string.Empty, "This email is already used by another account.");
+                }
+            }
+
             if (ModelState.IsValid)
             {
+                if (createLogin)
+                {
+                    var doctorRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == "Doctor");
+                    if (doctorRole == null)
+                    {
+                        ModelState.AddModelError(string.Empty, "Doctor role not configured in the system.");
+                        ViewData["DepartmentId"] = new SelectList(_context.Departments, "DepartmentId", "Name", doctor.DepartmentId);
+                        return View(doctor);
+                    }
+
+                    var user = new User
+                    {
+                        Name = doctor.Name,
+                        Email = doctor.Email,
+                        Phone = doctor.Phone,
+                        RoleId = doctorRole.RoleId,
+                        Status = "Active"
+                    };
+                    user.Password = _passwordHasher.HashPassword(user, loginPassword!);
+
+                    _context.Users.Add(user);
+                    await _context.SaveChangesAsync();
+
+                    doctor.UserId = user.UserId;
+                }
+
                 _context.Add(doctor);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -104,7 +148,7 @@ namespace SHMS.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Super Admin,Hospital Admin")]
-        public async Task<IActionResult> Edit(int id, [Bind("DoctorId,Name,Email,Phone,DepartmentId,Specialization,Availability")] Doctor doctor)
+        public async Task<IActionResult> Edit(int id, [Bind("DoctorId,Name,Email,Phone,DepartmentId,Specialization,Availability,UserId")] Doctor doctor)
         {
             if (id != doctor.DoctorId)
             {
@@ -217,8 +261,6 @@ namespace SHMS.Controllers
             return RedirectToAction(nameof(Details), new { id = doctorId });
         }
 
-        // A Doctor-role user may only manage the schedule of the Doctor record linked to their own account.
-        // Admins can manage any doctor's schedule.
         private async Task<bool> CanManageSchedule(int doctorId)
         {
             if (User.IsInRole("Super Admin") || User.IsInRole("Hospital Admin"))

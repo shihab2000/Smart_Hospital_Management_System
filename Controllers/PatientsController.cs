@@ -1,11 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SHMS.Data;
 using SHMS.Models;
@@ -18,17 +16,21 @@ namespace SHMS.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IPasswordHasher<User> _passwordHasher;
 
-        public PatientsController(ApplicationDbContext context, IPasswordHasher<User> passwordHasher)
+        public PatientsController(
+            ApplicationDbContext context,
+            IPasswordHasher<User> passwordHasher)
         {
             _context = context;
             _passwordHasher = passwordHasher;
         }
 
+        // =========================================================
         // GET: Patients
+        // =========================================================
         public async Task<IActionResult> Index(string searchString)
         {
             var patients = from p in _context.Patients
-                            select p;
+                           select p;
 
             if (!string.IsNullOrEmpty(searchString))
             {
@@ -36,8 +38,11 @@ namespace SHMS.Controllers
 
                 patients = patients.Where(p =>
                     p.Name.ToLower().Contains(search) ||
-                    (p.Phone != null && p.Phone.ToLower().Contains(search)) ||
-                    (p.BloodGroup != null && p.BloodGroup.ToLower().Contains(search)));
+                    (p.Phone != null &&
+                     p.Phone.ToLower().Contains(search)) ||
+                    (p.BloodGroup != null &&
+                     p.BloodGroup.ToLower().Contains(search))
+                );
             }
 
             ViewData["CurrentFilter"] = searchString;
@@ -45,7 +50,9 @@ namespace SHMS.Controllers
             return View(await patients.ToListAsync());
         }
 
+        // =========================================================
         // GET: Patients/Details/5
+        // =========================================================
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -63,12 +70,14 @@ namespace SHMS.Controllers
                 return NotFound();
             }
 
+            // Medical Records
             ViewBag.MedicalRecords = await _context.MedicalRecords
                 .Include(m => m.Doctor)
                 .Where(m => m.PatientId == id)
                 .OrderByDescending(m => m.RecordDate)
                 .ToListAsync();
 
+            // Prescriptions
             ViewBag.Prescriptions = await _context.Prescriptions
                 .Include(p => p.Doctor)
                 .Include(p => p.PrescriptionItems)
@@ -80,41 +89,79 @@ namespace SHMS.Controllers
             return View(patient);
         }
 
+        // =========================================================
         // GET: Patients/Create
+        // =========================================================
         [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public IActionResult Create()
         {
             return View();
         }
 
+        // =========================================================
         // POST: Patients/Create
+        // =========================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public async Task<IActionResult> Create(
-            [Bind("PatientId,Name,DateOfBirth,Gender,Phone,Address,BloodGroup,EmergencyContact")] Patient patient,
-            bool createLogin, string? loginEmail, string? loginPassword)
+            [Bind("PatientId,Name,DateOfBirth,Gender,Phone,Address,BloodGroup,EmergencyContact")]
+            Patient patient,
+            bool createLogin,
+            string? loginEmail,
+            string? loginPassword)
         {
+            // -----------------------------------------------------
+            // PostgreSQL timestamp with time zone requires UTC
+            // -----------------------------------------------------
+            patient.DateOfBirth = DateTime.SpecifyKind(
+                patient.DateOfBirth.Date,
+                DateTimeKind.Utc
+            );
+
+            // -----------------------------------------------------
+            // Validate Login Information
+            // -----------------------------------------------------
             if (createLogin)
             {
-                if (string.IsNullOrWhiteSpace(loginEmail) || string.IsNullOrWhiteSpace(loginPassword))
+                if (string.IsNullOrWhiteSpace(loginEmail) ||
+                    string.IsNullOrWhiteSpace(loginPassword))
                 {
-                    ModelState.AddModelError(string.Empty, "Email and password are required to create a login account.");
+                    ModelState.AddModelError(
+                        string.Empty,
+                        "Email and password are required to create a login account."
+                    );
                 }
-                else if (await _context.Users.AnyAsync(u => u.Email == loginEmail))
+                else if (await _context.Users.AnyAsync(
+                    u => u.Email == loginEmail))
                 {
-                    ModelState.AddModelError(string.Empty, "This email is already used by another account.");
+                    ModelState.AddModelError(
+                        string.Empty,
+                        "This email is already used by another account."
+                    );
                 }
             }
 
+            // -----------------------------------------------------
+            // Save Patient
+            // -----------------------------------------------------
             if (ModelState.IsValid)
             {
+                // Create Login Account
                 if (createLogin)
                 {
-                    var patientRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == "Patient");
+                    var patientRole = await _context.Roles
+                        .FirstOrDefaultAsync(
+                            r => r.RoleName == "Patient"
+                        );
+
                     if (patientRole == null)
                     {
-                        ModelState.AddModelError(string.Empty, "Patient role not configured in the system.");
+                        ModelState.AddModelError(
+                            string.Empty,
+                            "Patient role not configured in the system."
+                        );
+
                         return View(patient);
                     }
 
@@ -126,22 +173,36 @@ namespace SHMS.Controllers
                         RoleId = patientRole.RoleId,
                         Status = "Active"
                     };
-                    user.Password = _passwordHasher.HashPassword(user, loginPassword!);
+
+                    // Hash password
+                    user.Password = _passwordHasher.HashPassword(
+                        user,
+                        loginPassword!
+                    );
 
                     _context.Users.Add(user);
+
+                    // Save User first to get UserId
                     await _context.SaveChangesAsync();
 
+                    // Link Patient with User
                     patient.UserId = user.UserId;
                 }
 
-                _context.Add(patient);
+                // Add Patient
+                _context.Patients.Add(patient);
+
                 await _context.SaveChangesAsync();
+
                 return RedirectToAction(nameof(Index));
             }
+
             return View(patient);
         }
 
+        // =========================================================
         // GET: Patients/Edit/5
+        // =========================================================
         [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -150,30 +211,51 @@ namespace SHMS.Controllers
                 return NotFound();
             }
 
-            var patient = await _context.Patients.FindAsync(id);
+            var patient = await _context.Patients
+                .FindAsync(id);
+
             if (patient == null)
             {
                 return NotFound();
             }
+
             return View(patient);
         }
 
+        // =========================================================
         // POST: Patients/Edit/5
+        // =========================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
-        public async Task<IActionResult> Edit(int id, [Bind("PatientId,Name,DateOfBirth,Gender,Phone,Address,BloodGroup,EmergencyContact,UserId")] Patient patient)
+        public async Task<IActionResult> Edit(
+            int id,
+            [Bind("PatientId,Name,DateOfBirth,Gender,Phone,Address,BloodGroup,EmergencyContact,UserId")]
+            Patient patient)
         {
+            // Check ID
             if (id != patient.PatientId)
             {
                 return NotFound();
             }
 
+            // -----------------------------------------------------
+            // PostgreSQL timestamp with time zone requires UTC
+            // -----------------------------------------------------
+            patient.DateOfBirth = DateTime.SpecifyKind(
+                patient.DateOfBirth.Date,
+                DateTimeKind.Utc
+            );
+
+            // -----------------------------------------------------
+            // Update Patient
+            // -----------------------------------------------------
             if (ModelState.IsValid)
             {
                 try
                 {
                     _context.Update(patient);
+
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -182,17 +264,19 @@ namespace SHMS.Controllers
                     {
                         return NotFound();
                     }
-                    else
-                    {
-                        throw;
-                    }
+
+                    throw;
                 }
+
                 return RedirectToAction(nameof(Index));
             }
+
             return View(patient);
         }
 
+        // =========================================================
         // GET: Patients/Delete/5
+        // =========================================================
         [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public async Task<IActionResult> Delete(int? id)
         {
@@ -203,6 +287,7 @@ namespace SHMS.Controllers
 
             var patient = await _context.Patients
                 .FirstOrDefaultAsync(m => m.PatientId == id);
+
             if (patient == null)
             {
                 return NotFound();
@@ -211,25 +296,34 @@ namespace SHMS.Controllers
             return View(patient);
         }
 
+        // =========================================================
         // POST: Patients/Delete/5
+        // =========================================================
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Super Admin,Hospital Admin,Receptionist")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var patient = await _context.Patients.FindAsync(id);
+            var patient = await _context.Patients
+                .FindAsync(id);
+
             if (patient != null)
             {
                 _context.Patients.Remove(patient);
             }
 
             await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
 
+        // =========================================================
+        // Check Patient Exists
+        // =========================================================
         private bool PatientExists(int id)
         {
-            return _context.Patients.Any(e => e.PatientId == id);
+            return _context.Patients
+                .Any(e => e.PatientId == id);
         }
     }
 }

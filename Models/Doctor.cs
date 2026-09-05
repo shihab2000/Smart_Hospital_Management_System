@@ -27,8 +27,6 @@ namespace SHMS.Models
 
         public bool Availability { get; set; }
 
-        // Links this doctor record to a login account (User), so a logged-in
-        // doctor can be matched to their own appointments/records.
         public int? UserId { get; set; }
 
         [ForeignKey("UserId")]
